@@ -1,41 +1,34 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "../index.css";
-import Providers from "@/components/providers";
-import Header from "@/components/header";
-
-const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-	title: "temp-prompt-tester",
-	description: "temp-prompt-tester",
-};
+import { MantineProvider, ColorSchemeScript } from "@mantine/core";
+import "@mantine/core/styles.css";
 
 export default function RootLayout({
-	children,
-}: Readonly<{
-	children: React.ReactNode;
-}>) {
-	return (
-		<html lang="en" suppressHydrationWarning>
-			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-			>
-				<Providers>
-					<div className="grid grid-rows-[auto_1fr] h-svh">
-						<Header />
-						{children}
-					</div>
-				</Providers>
-			</body>
-		</html>
-	);
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined') {
+                eruda.init({
+                  defaults: {
+                    displaySize: 30,
+                    transparency: 0.95,
+                    position: 'right'
+                  }
+                });
+              }
+            `,
+          }}
+        />
+      </head>
+      <body>
+        <MantineProvider defaultColorScheme="dark">{children}</MantineProvider>
+      </body>
+    </html>
+  );
 }
