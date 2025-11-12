@@ -22,4 +22,32 @@ const getResponse = async (
   return response.json();
 };
 
-export { getResponse };
+const storeFeedback = async (
+  messageId: string,
+  feedback: {
+    accuracy?: number;
+    comments?: string;
+    idealAnswer?: string;
+    isUseful?: boolean | null;
+  }
+) => {
+  const filteredFeedback = Object.fromEntries(
+    Object.entries(feedback).filter(([_, v]) => v !== undefined && v !== "")
+  );
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/storeFeedback`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messageId,
+        feedback: filteredFeedback,
+      }),
+    }
+  );
+
+  if (!response.ok) throw new Error("Failed to store feedback");
+  return response.json();
+};
+export { getResponse, storeFeedback };

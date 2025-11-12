@@ -21,12 +21,18 @@ import {
   IconSend,
   IconBookmark,
   IconSettings,
+  IconThumbUp,
+  IconThumbDown,
+  IconCopy,
+  IconMessage,
+  IconMessageCircle,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { getResponse } from "@/api/helpers";
+import { getResponse, storeFeedback } from "@/api/helpers";
 
 type Message = {
+  id?: string;
   role: "developer" | "assistant";
   content: [{ type: "input_text" | "output_text"; text: string }];
 };
@@ -42,7 +48,33 @@ export default function ChatPage() {
   const [session_id] = useState(() => crypto.randomUUID());
   const viewport = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
+  const [messageFeedback, setMessageFeedback] = useState<
+    {
+      messageId: string;
+      isUseful?: boolean | null;
+      comments?: string;
+      idealAnswer?: string;
+    }[]
+  >([]);
+  const [showComment, setShowComment] = useState(false);
 
+  const getFeedback = (messageId: string) =>
+    messageFeedback.find((f) => f.messageId === messageId);
+
+  const setFeedbackForMessage = (messageId: string, feedback: any) => {
+    const existing = messageFeedback.findIndex(
+      (f) => f.messageId === messageId
+    );
+    if (existing >= 0) {
+      const updated = [...messageFeedback];
+      updated[existing] = { ...updated[existing], ...feedback };
+      setMessageFeedback(updated);
+    } else {
+      setMessageFeedback([...messageFeedback, { messageId, ...feedback }]);
+    }
+
+    storeFeedback(messageId, feedback);
+  };
   const scrollToBottom = () =>
     viewport.current?.scrollTo({
       top: viewport.current.scrollHeight,
@@ -72,6 +104,7 @@ export default function ChatPage() {
       );
 
       const assistantMessage: Message = {
+        id: response.messageId,
         role: "assistant",
         content: [{ type: "output_text", text: response.text }],
       };
@@ -84,7 +117,7 @@ export default function ChatPage() {
       setLoading(false);
     }
   };
-  
+
   return (
     <AppShell padding="md" header={{ height: 40 }}>
       <AppShellHeader>
@@ -147,6 +180,51 @@ export default function ChatPage() {
                 <Text c="white" size="sm">
                   {msg.content[0].text}
                 </Text>
+
+                {msg.role === "assistant" && (
+                  <Group gap="xs" mt="sm" justify="flex-end">
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color={
+                        getFeedback(msg.id!)?.isUseful === true
+                          ? "white"
+                          : "grey"
+                      }
+                      onClick={() => {
+                        const current = getFeedback(msg.id!)?.isUseful;
+                        setFeedbackForMessage(msg.id!, {
+                          isUseful: current === true ? null : true,
+                        });
+                      }}
+                    >
+                      <IconThumbUp />
+                    </ActionIcon>
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color={
+                        getFeedback(msg.id!)?.isUseful === false
+                          ? "white"
+                          : "grey"
+                      }
+                      onClick={() => {
+                        const current = getFeedback(msg.id!)?.isUseful;
+                        setFeedbackForMessage(msg.id!, {
+                          isUseful: current === false ? null : false,
+                        });
+                      }}
+                    >
+                      <IconThumbDown />
+                    </ActionIcon>
+                    <ActionIcon size="sm" variant="subtle" color="grey">
+                      <IconMessageCircle />
+                    </ActionIcon>
+                    <ActionIcon size="sm" variant="subtle" color="grey">
+                      <IconCopy />
+                    </ActionIcon>
+                  </Group>
+                )}
               </Paper>
             ))}
             {loading && (
