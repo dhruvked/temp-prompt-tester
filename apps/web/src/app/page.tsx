@@ -1,228 +1,193 @@
 "use client";
 import {
-  Group,
-  Center,
-  Stack,
-  Input,
   ActionIcon,
-  Textarea,
-  Text,
+  AppShell,
+  AppShellHeader,
+  AppShellMain,
   Button,
-  Checkbox,
-  Rating,
+  Group,
+  Stack,
+  Text,
+  TextInput,
+  useMantineColorScheme,
   Paper,
+  ScrollArea,
+  Tabs,
 } from "@mantine/core";
-import { IconSend } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconSun,
+  IconMoon,
+  IconSend,
+  IconBookmark,
+  IconSettings,
+} from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { getResponse } from "@/api/helpers";
 
-async function getResponse(text: string) {
-  const session_id = crypto.randomUUID();
-  const input = [
-    {
-      role: "developer",
-      content: [{ type: "input_text", text }],
-    },
-  ];
+type Message = {
+  role: "developer" | "assistant";
+  content: [{ type: "input_text" | "output_text"; text: string }];
+};
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/getResponse7`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        input,
-        id: "3e532144-2181-48eb-be56-66edc3bab9dd",
-        session_id,
-        accountId: "435f83e7-6361-4d99-8bdf-12ea1328f0c7",
-      }),
-    }
-  );
-  const data = await response.json();
-  return data;
-}
-
-async function storeFeedback(
-  messageId: string,
-  feedback: {
-    accuracy: number;
-    comments: string;
-    idealAnswer: string;
-    isUseful: boolean;
-  }
-) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/storeFeedback`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messageId, feedback }),
-    }
-  );
-  const data = await response.json();
-  return data;
-}
-
-export default function Home() {
+export default function ChatPage() {
+  const router = useRouter();
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme({
+    keepTransitions: true,
+  });
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [session_id] = useState(() => crypto.randomUUID());
+  const viewport = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
-  const [response, setResponse] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isSavingFeedback, setIsSavingFeedback] = useState(false);
-  const [messageId, setMessageId] = useState<string | null>(null);
-  const [accuracy, setAccuracy] = useState(0);
-  const [comments, setComments] = useState("");
-  const [idealAnswer, setIdealAnswer] = useState("");
-  const [isUseful, setIsUseful] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const scrollToBottom = () =>
+    viewport.current?.scrollTo({
+      top: viewport.current.scrollHeight,
+      behavior: "smooth",
+    });
+
+  useEffect(scrollToBottom, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
-    setIsLoading(true);
-    setElapsedTime(0);
-    setShowFeedback(false);
-
-    intervalRef.current = setInterval(() => {
-      setElapsedTime((prev) => prev + 0.1);
-    }, 100);
-
-    try {
-      const result = await getResponse(input);
-      setResponse(result.text);
-      setMessageId(result.messageId);
-      setInput("");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmitFeedback = async () => {
-    if (!messageId) return;
-    setIsSavingFeedback(true);
-
-    try {
-      await storeFeedback(messageId, {
-        accuracy,
-        comments,
-        idealAnswer,
-        isUseful,
-      });
-      setShowFeedback(false);
-      setAccuracy(0);
-      setComments("");
-      setIdealAnswer("");
-      setIsUseful(false);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSavingFeedback(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !isLoading) {
-      handleSend();
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+    if (!input.trim() || loading) return;
+    const userMessage: Message = {
+      role: "developer",
+      content: [{ type: "input_text", text: input }],
     };
-  }, []);
 
+    let updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const response = await getResponse(
+        updatedMessages,
+        "3e532144-2181-48eb-be56-66edc3bab9dd",
+        session_id,
+        "435f83e7-6361-4d99-8bdf-12ea1328f0c7"
+      );
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: [{ type: "output_text", text: response.text }],
+      };
+
+      updatedMessages = [...updatedMessages, assistantMessage];
+      setMessages(updatedMessages);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   return (
-    <Center h="100vh">
-      <Stack align="stretch" w={600} h="100%" pt="lg" pb="lg">
-        <Group gap="xs">
-          <Input
-            size="md"
-            placeholder="text here"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            style={{ flex: 1 }}
-          />
-          <ActionIcon size="lg" onClick={handleSend} loading={isLoading}>
-            <IconSend />
+    <AppShell padding="md" header={{ height: 40 }}>
+      <AppShellHeader>
+        <Group h="100%" justify="space-between" px="xs" align="center">
+          <ActionIcon
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            variant="transparent"
+            c="white"
+            size="lg"
+            style={{
+              transform: isSettingsOpen ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.3s ease",
+            }}
+          >
+            <IconSettings size={24} />
+          </ActionIcon>
+          <Text
+            fw={700}
+            size="lg"
+            onClick={() => router.back()}
+            style={{ cursor: "pointer" }}
+          >
+            Choreo Avatar
+          </Text>
+          <ActionIcon
+            variant="default"
+            onClick={() => toggleColorScheme()}
+            size="sm"
+            suppressHydrationWarning
+          >
+            {colorScheme === "dark" ? (
+              <IconSun size={20} />
+            ) : (
+              <IconMoon size={20} />
+            )}
           </ActionIcon>
         </Group>
-        {isLoading && (
-          <Text size="sm" c="dimmed">
-            Loading... {elapsedTime.toFixed(1)}s
-          </Text>
-        )}
-        <Textarea
-          placeholder="Response"
-          minRows={15}
-          autosize
-          maxRows={25}
-          readOnly
-          value={response}
-        />
-        {response && !showFeedback && (
-          <Button onClick={() => setShowFeedback(true)} variant="light">
-            Give Feedback
-          </Button>
-        )}
-
-        {showFeedback && (
-          <Paper p="md" radius="md" bg="black">
-            <Stack gap="md">
-              <div>
-                <Text size="sm" fw={500} mb="xs">
-                  Accuracy
+      </AppShellHeader>
+      <AppShellMain
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "calc(100vh - 40px)",
+        }}
+      >
+        <ScrollArea flex={1} viewportRef={viewport} px="md">
+          <Stack gap="sm" py="md">
+            {messages.map((msg, index) => (
+              <Paper
+                key={index}
+                p="sm"
+                radius="md"
+                bg={msg.role === "developer" ? "blue" : "gray"}
+                style={{
+                  alignSelf:
+                    msg.role === "developer" ? "flex-end" : "flex-start",
+                  maxWidth: "70%",
+                }}
+              >
+                <Text c="white" size="sm">
+                  {msg.content[0].text}
                 </Text>
-                <Rating value={accuracy} onChange={setAccuracy} />
-              </div>
+              </Paper>
+            ))}
+            {loading && (
+              <Paper
+                p="sm"
+                radius="md"
+                bg="gray"
+                style={{ alignSelf: "flex-start", maxWidth: "70%" }}
+              >
+                <Text c="white" size="sm">
+                  ...
+                </Text>
+              </Paper>
+            )}
+          </Stack>
+        </ScrollArea>
 
-              <Textarea
-                label="Comments"
-                placeholder="Additional comments..."
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                minRows={2}
-              />
-
-              <Textarea
-                label="Ideal Answer"
-                placeholder="What would be a better response?"
-                value={idealAnswer}
-                onChange={(e) => setIdealAnswer(e.target.value)}
-                minRows={2}
-              />
-
-              <Checkbox
-                label="Like?"
-                checked={isUseful}
-                onChange={(e) => setIsUseful(e.currentTarget.checked)}
-              />
-
-              <Group justify="flex-end">
-                <Button
-                  variant="default"
-                  onClick={() => setShowFeedback(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSubmitFeedback}
-                  loading={isSavingFeedback}
-                >
-                  Submit Feedback
-                </Button>
-              </Group>
-            </Stack>
-          </Paper>
-        )}
-      </Stack>
-    </Center>
+        <Stack
+          gap="md"
+          p="md"
+          style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}
+        >
+          <Group gap="xs">
+            <TextInput
+              flex={1}
+              placeholder="Type a message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            />
+            <ActionIcon
+              size="lg"
+              onClick={() => handleSend()}
+              disabled={loading}
+              title="Send message"
+            >
+              <IconSend size={20} />
+            </ActionIcon>
+          </Group>
+        </Stack>
+      </AppShellMain>
+    </AppShell>
   );
 }
