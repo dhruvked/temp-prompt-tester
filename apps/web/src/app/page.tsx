@@ -54,6 +54,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<any>(null);
+  const [status, setStatus] = useState<any>("idle");
 
   const [messageFeedback, setMessageFeedback] = useState<
     {
@@ -122,7 +123,7 @@ export default function ChatPage() {
       };
 
       if (avatar) {
-        await handleSpeak(avatar, response.text);
+        await handleSpeak(avatar, response.text, status);
       }
       updatedMessages = [...updatedMessages, assistantMessage];
       setMessages(updatedMessages);
@@ -195,6 +196,7 @@ export default function ChatPage() {
           >
             Choreo Avatar
           </Text>
+
           <ActionIcon
             variant="default"
             onClick={() => toggleColorScheme()}
@@ -216,7 +218,13 @@ export default function ChatPage() {
           height: "calc(100vh - 40px)",
         }}
       >
-        <VideoComponenet avatar={avatar} setAvatar={setAvatar} />
+        <VideoComponenet
+          avatar={avatar}
+          setAvatar={setAvatar}
+          status={status}
+          setStatus={setStatus}
+        />
+
         <ScrollArea flex={1} viewportRef={viewport} px="md">
           <Stack gap="sm" py="md">
             {messages.map((msg, index) => (

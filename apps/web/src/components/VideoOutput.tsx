@@ -7,10 +7,13 @@ const VideoOutput = ({ videoRef, status, initAvatar, endAvatar }: any) => {
       style={{
         position: "relative",
         zIndex: 1,
-        height: "300px",
-        width: "200px",
+        height: "80%",
+        width: "120px",
         borderRadius: "8px",
         backgroundColor: "black",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <video
@@ -21,68 +24,11 @@ const VideoOutput = ({ videoRef, status, initAvatar, endAvatar }: any) => {
           width: "100%",
           height: "100%",
           borderRadius: "8px",
-          objectFit: "contain",
+          objectFit: "cover",
         }}
       >
         Your browser does not support the video tag.
       </video>
-
-      {status === "idle" && (
-        <ActionIcon
-          onClick={() => {
-            if (videoRef.current) {
-              videoRef.current.muted = true; // start muted
-              videoRef.current.play().catch(console.error);
-            }
-            initAvatar();
-          }}
-          variant="transparent"
-          size="xl"
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            color: "white",
-          }}
-        >
-          <IconPlayerPlay size={40} />
-        </ActionIcon>
-      )}
-
-      {status === "initializing" && (
-        <ActionIcon
-          variant="transparent"
-          size="xl"
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            color: "white",
-          }}
-        >
-          <Loader size={40} color="grey" />
-        </ActionIcon>
-      )}
-
-      {status !== "idle" && status !== "initializing" && (
-        <>
-          <ActionIcon
-            onClick={endAvatar}
-            variant="transparent"
-            size="lg"
-            style={{
-              position: "absolute",
-              top: "15px",
-              left: "15px",
-              color: "white",
-            }}
-          >
-            <IconX size={24} />
-          </ActionIcon>
-        </>
-      )}
     </div>
   );
 };

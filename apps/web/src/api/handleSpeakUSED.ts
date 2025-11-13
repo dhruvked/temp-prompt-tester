@@ -3,9 +3,12 @@ import { TaskMode, TaskType } from "@heygen/streaming-avatar";
 
 export default async function handleSpeak(
   avatar: StreamingAvatar,
-  text: string
+  text: string,
+  status: string
 ) {
-  console.log(text, avatar);
+  if (status === "speaking") {
+    avatar.interrupt();
+  }
   try {
     await avatar.speak({
       text: text,
