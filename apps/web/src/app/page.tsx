@@ -32,6 +32,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { getResponse, storeFeedback } from "@/api/helpers";
+import VideoComponenet from "@/components/VideoComponent";
 
 type Message = {
   id?: string;
@@ -210,6 +211,7 @@ export default function ChatPage() {
           height: "calc(100vh - 40px)",
         }}
       >
+        <VideoComponenet />
         <ScrollArea flex={1} viewportRef={viewport} px="md">
           <Stack gap="sm" py="md">
             {messages.map((msg, index) => (
