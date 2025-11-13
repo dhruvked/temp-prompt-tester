@@ -32,7 +32,7 @@ const storeFeedback = async (
   }
 ) => {
   const filteredFeedback = Object.fromEntries(
-    Object.entries(feedback).filter(([_, v]) => v !== undefined && v !== "")
+    Object.entries(feedback).filter(([_, v]) => v !== undefined)
   );
 
   const response = await fetch(

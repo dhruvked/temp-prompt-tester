@@ -13,6 +13,7 @@ import {
   Paper,
   ScrollArea,
   Tabs,
+  Textarea,
 } from "@mantine/core";
 import {
   IconArrowLeft,
@@ -56,7 +57,12 @@ export default function ChatPage() {
       idealAnswer?: string;
     }[]
   >([]);
-  const [showComment, setShowComment] = useState(false);
+  const [commentForms, setCommentForms] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const [idealAnswerForms, setIdealAnswerForms] = useState<{
+    [key: string]: string;
+  }>({});
 
   const getFeedback = (messageId: string) =>
     messageFeedback.find((f) => f.messageId === messageId);
@@ -116,6 +122,51 @@ export default function ChatPage() {
     } finally {
       setLoading(false);
     }
+  };
+  const handleCommentClick = (messageId: string) => {
+    if (commentForms.hasOwnProperty(messageId)) {
+      const updated = { ...commentForms };
+      delete updated[messageId];
+      setCommentForms(updated);
+    } else {
+      setCommentForms({
+        ...commentForms,
+        [messageId]: getFeedback(messageId)?.comments || "",
+      });
+    }
+  };
+
+  const handleSaveComment = (messageId: string) => {
+    const commentText = commentForms[messageId]?.trim();
+    setFeedbackForMessage(messageId, {
+      comments: commentText || null,
+    });
+    const updated = { ...commentForms };
+    delete updated[messageId];
+    setCommentForms(updated);
+  };
+
+  const handleIdealAnswerClick = (messageId: string) => {
+    if (idealAnswerForms.hasOwnProperty(messageId)) {
+      const updated = { ...idealAnswerForms };
+      delete updated[messageId];
+      setIdealAnswerForms(updated);
+    } else {
+      setIdealAnswerForms({
+        ...idealAnswerForms,
+        [messageId]: getFeedback(messageId)?.idealAnswer || "",
+      });
+    }
+  };
+
+  const handleSaveIdealAnswer = (messageId: string) => {
+    const answerText = idealAnswerForms[messageId]?.trim();
+    setFeedbackForMessage(messageId, {
+      idealAnswer: answerText || null,
+    });
+    const updated = { ...idealAnswerForms };
+    delete updated[messageId];
+    setIdealAnswerForms(updated);
   };
 
   return (
@@ -182,49 +233,138 @@ export default function ChatPage() {
                 </Text>
 
                 {msg.role === "assistant" && (
-                  <Group gap="xs" mt="sm" justify="flex-end">
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color={
-                        getFeedback(msg.id!)?.isUseful === true
-                          ? "white"
-                          : "grey"
-                      }
-                      onClick={() => {
-                        const current = getFeedback(msg.id!)?.isUseful;
-                        setFeedbackForMessage(msg.id!, {
-                          isUseful: current === true ? null : true,
-                        });
-                      }}
-                    >
-                      <IconThumbUp />
-                    </ActionIcon>
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color={
-                        getFeedback(msg.id!)?.isUseful === false
-                          ? "white"
-                          : "grey"
-                      }
-                      onClick={() => {
-                        const current = getFeedback(msg.id!)?.isUseful;
-                        setFeedbackForMessage(msg.id!, {
-                          isUseful: current === false ? null : false,
-                        });
-                      }}
-                    >
-                      <IconThumbDown />
-                    </ActionIcon>
-                    <ActionIcon size="sm" variant="subtle" color="grey">
-                      <IconMessageCircle />
-                    </ActionIcon>
+                  <Group justify="space-between">
                     <ActionIcon size="sm" variant="subtle" color="grey">
                       <IconCopy />
                     </ActionIcon>
+                    <Group gap="xs" mt="sm" justify="flex-end">
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color={
+                          getFeedback(msg.id!)?.isUseful === true
+                            ? "white"
+                            : "grey"
+                        }
+                        onClick={() => {
+                          const current = getFeedback(msg.id!)?.isUseful;
+                          setFeedbackForMessage(msg.id!, {
+                            isUseful: current === true ? null : true,
+                          });
+                        }}
+                      >
+                        <IconThumbUp />
+                      </ActionIcon>
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color={
+                          getFeedback(msg.id!)?.isUseful === false
+                            ? "white"
+                            : "grey"
+                        }
+                        onClick={() => {
+                          const current = getFeedback(msg.id!)?.isUseful;
+                          setFeedbackForMessage(msg.id!, {
+                            isUseful: current === false ? null : false,
+                          });
+                          if (current !== false) {
+                            setIdealAnswerForms({
+                              ...idealAnswerForms,
+                              [msg.id!]:
+                                getFeedback(msg.id!)?.idealAnswer || "",
+                            });
+                          }
+                        }}
+                      >
+                        <IconThumbDown />
+                      </ActionIcon>
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color={
+                          getFeedback(msg.id!)?.comments ? "white" : "grey"
+                        }
+                        onClick={() => handleCommentClick(msg.id!)}
+                      >
+                        <IconMessageCircle />
+                      </ActionIcon>
+                    </Group>
                   </Group>
                 )}
+
+                {commentForms.hasOwnProperty(msg.id!) && (
+                  <Stack gap="xs" mt="sm">
+                    <Textarea
+                      placeholder="Enter your comments..."
+                      value={commentForms[msg.id!] || ""}
+                      onChange={(e: any) =>
+                        setCommentForms({
+                          ...commentForms,
+                          [msg.id!]: e.currentTarget.value,
+                        })
+                      }
+                      rows={3}
+                      size="xs"
+                    />
+                    <Group gap="xs" justify="flex-end">
+                      <Button
+                        size="xs"
+                        variant="default"
+                        onClick={() => {
+                          const updated = { ...commentForms };
+                          delete updated[msg.id!];
+                          setCommentForms(updated);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="xs"
+                        onClick={() => handleSaveComment(msg.id!)}
+                      >
+                        Save
+                      </Button>
+                    </Group>
+                  </Stack>
+                )}
+
+                {getFeedback(msg.id!)?.isUseful === false &&
+                  idealAnswerForms.hasOwnProperty(msg.id!) && (
+                    <Stack gap="xs" mt="sm">
+                      <Textarea
+                        placeholder="Enter the ideal answer..."
+                        value={idealAnswerForms[msg.id!] || ""}
+                        onChange={(e) =>
+                          setIdealAnswerForms({
+                            ...idealAnswerForms,
+                            [msg.id!]: e.currentTarget.value,
+                          })
+                        }
+                        rows={3}
+                        size="xs"
+                      />
+                      <Group gap="xs" justify="flex-end">
+                        <Button
+                          size="xs"
+                          variant="default"
+                          onClick={() => {
+                            const updated = { ...idealAnswerForms };
+                            delete updated[msg.id!];
+                            setIdealAnswerForms(updated);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="xs"
+                          onClick={() => handleSaveIdealAnswer(msg.id!)}
+                        >
+                          Save
+                        </Button>
+                      </Group>
+                    </Stack>
+                  )}
               </Paper>
             ))}
             {loading && (
