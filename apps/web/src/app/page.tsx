@@ -216,7 +216,7 @@ export default function ChatPage() {
           height: "calc(100vh - 40px)",
         }}
       >
-        <VideoComponenet avatar={avatar} setAvatar={setAvatar} />
+        {/* <VideoComponenet avatar={avatar} setAvatar={setAvatar} /> */}
         <ScrollArea flex={1} viewportRef={viewport} px="md">
           <Stack gap="sm" py="md">
             {messages.map((msg, index) => (
