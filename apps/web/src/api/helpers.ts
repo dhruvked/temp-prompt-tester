@@ -4,13 +4,15 @@ const getResponse = async (
   session_id: string,
   accountId: string
 ) => {
+  const cleanedMessages = messages.map(({ id, ...rest }) => rest);
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/getResponse7`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        input: messages,
+        input: cleanedMessages,
         id,
         session_id,
         accountId,
@@ -21,7 +23,6 @@ const getResponse = async (
   if (!response.ok) throw new Error("Failed to get response");
   return response.json();
 };
-
 const storeFeedback = async (
   messageId: string,
   feedback: {
