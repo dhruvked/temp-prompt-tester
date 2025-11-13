@@ -420,7 +420,8 @@ export default function ChatPage() {
         <Stack
           gap="md"
           p="md"
-          style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}
+          bg="rgba(0, 0, 0, 0.2)"
+          style={{ borderRadius: "12px" }}
         >
           <Group gap="xs">
             <TextInput
