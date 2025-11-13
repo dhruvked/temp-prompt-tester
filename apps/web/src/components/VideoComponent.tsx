@@ -5,8 +5,7 @@ import { Stack } from "@mantine/core";
 import React from "react";
 import VideoOutput from "./VideoOutput";
 
-export default function VideoComponenet() {
-  const [avatar, setAvatar] = React.useState<any>(null);
+export default function VideoComponenet({ avatar, setAvatar }: any) {
   const [status, setStatus] = React.useState<string>("idle");
   const videoRef = React.useRef<HTMLVideoElement>(null);
 

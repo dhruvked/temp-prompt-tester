@@ -33,6 +33,7 @@ import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { getResponse, storeFeedback } from "@/api/helpers";
 import VideoComponenet from "@/components/VideoComponent";
+import handleSpeak from "@/api/handleSpeakUSED";
 
 type Message = {
   id?: string;
@@ -52,6 +53,7 @@ export default function ChatPage() {
   const viewport = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [avatar, setAvatar] = useState<any>(null);
 
   const [messageFeedback, setMessageFeedback] = useState<
     {
@@ -119,6 +121,9 @@ export default function ChatPage() {
         content: [{ type: "output_text", text: response.text }],
       };
 
+      if (avatar) {
+        await handleSpeak(avatar, response.text);
+      }
       updatedMessages = [...updatedMessages, assistantMessage];
       setMessages(updatedMessages);
     } catch (error) {
@@ -211,7 +216,7 @@ export default function ChatPage() {
           height: "calc(100vh - 40px)",
         }}
       >
-        <VideoComponenet />
+        <VideoComponenet avatar={avatar} setAvatar={setAvatar} />
         <ScrollArea flex={1} viewportRef={viewport} px="md">
           <Stack gap="sm" py="md">
             {messages.map((msg, index) => (
