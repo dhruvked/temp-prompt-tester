@@ -14,6 +14,10 @@ import {
   ScrollArea,
   Tabs,
   Textarea,
+  Menu,
+  MenuTarget,
+  MenuDropdown,
+  MenuItem,
 } from "@mantine/core";
 import {
   IconArrowLeft,
@@ -55,6 +59,7 @@ export default function ChatPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<any>(null);
   const [status, setStatus] = useState<any>("idle");
+  const [showVideo, setShowVideo] = useState(true);
 
   const [messageFeedback, setMessageFeedback] = useState<
     {
@@ -176,18 +181,26 @@ export default function ChatPage() {
     <AppShell padding="md" header={{ height: 40 }}>
       <AppShellHeader>
         <Group h="100%" justify="space-between" px="xs" align="center">
-          <ActionIcon
-            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-            variant="transparent"
-            c="white"
-            size="lg"
-            style={{
-              transform: isSettingsOpen ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.3s ease",
-            }}
-          >
-            <IconSettings size={24} />
-          </ActionIcon>
+          <Menu>
+            <Menu.Target>
+              <ActionIcon
+                variant="transparent"
+                c="white"
+                size="lg"
+                style={{
+                  transform: isSettingsOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.3s ease",
+                }}
+              >
+                <IconSettings size={24} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item onClick={() => setShowVideo(!showVideo)}>
+                {showVideo ? "Hide Video" : "Show Video"}
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
           <Text
             fw={700}
             size="lg"
@@ -218,12 +231,14 @@ export default function ChatPage() {
           height: "calc(100vh - 40px)",
         }}
       >
-        <VideoComponenet
-          avatar={avatar}
-          setAvatar={setAvatar}
-          status={status}
-          setStatus={setStatus}
-        />
+        <div style={{ display: showVideo ? "block" : "none" }}>
+          <VideoComponenet
+            avatar={avatar}
+            setAvatar={setAvatar}
+            status={status}
+            setStatus={setStatus}
+          />
+        </div>
 
         <ScrollArea flex={1} viewportRef={viewport} px="md">
           <Stack gap="sm" py="md">
