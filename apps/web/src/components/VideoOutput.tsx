@@ -7,8 +7,8 @@ const VideoOutput = ({ videoRef, status, initAvatar, endAvatar }: any) => {
       style={{
         position: "relative",
         zIndex: 1,
-        height: "400px",
-        width: "250px",
+        height: "300px",
+        width: "200px",
         borderRadius: "8px",
         backgroundColor: "black",
       }}
