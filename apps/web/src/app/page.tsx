@@ -27,6 +27,7 @@ import {
   IconCopy,
   IconMessage,
   IconMessageCircle,
+  IconCheck,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
@@ -49,6 +50,8 @@ export default function ChatPage() {
   const [session_id] = useState(() => crypto.randomUUID());
   const viewport = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
   const [messageFeedback, setMessageFeedback] = useState<
     {
       messageId: string;
@@ -146,17 +149,10 @@ export default function ChatPage() {
     setCommentForms(updated);
   };
 
-  const handleIdealAnswerClick = (messageId: string) => {
-    if (idealAnswerForms.hasOwnProperty(messageId)) {
-      const updated = { ...idealAnswerForms };
-      delete updated[messageId];
-      setIdealAnswerForms(updated);
-    } else {
-      setIdealAnswerForms({
-        ...idealAnswerForms,
-        [messageId]: getFeedback(messageId)?.idealAnswer || "",
-      });
-    }
+  const handleCopy = (messageId: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(messageId);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleSaveIdealAnswer = (messageId: string) => {
@@ -234,8 +230,17 @@ export default function ChatPage() {
 
                 {msg.role === "assistant" && (
                   <Group justify="space-between">
-                    <ActionIcon size="sm" variant="subtle" color="grey">
-                      <IconCopy />
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color="grey"
+                      onClick={() => handleCopy(msg.id!, msg.content[0].text)}
+                    >
+                      {copiedId === msg.id ? (
+                        <IconCheck size={16} />
+                      ) : (
+                        <IconCopy />
+                      )}
                     </ActionIcon>
                     <Group gap="xs" mt="sm" justify="flex-end">
                       <ActionIcon
