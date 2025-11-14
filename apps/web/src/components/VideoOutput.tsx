@@ -1,14 +1,14 @@
 import { IconPlayerPlay, IconX } from "@tabler/icons-react";
 import { ActionIcon, Loader } from "@mantine/core";
 
-const VideoOutput = ({ videoRef, status }: any) => {
+const VideoOutput = ({ videoRef, isMobile }: any) => {
   return (
     <div
       style={{
         position: "relative",
         zIndex: 10,
-        height: "80%",
-        width: "140px",
+        height: isMobile ? "20vh" : "75vh",
+        width: "100%",
         borderRadius: "12px",
         background: "rgba(15, 15, 15, 0.8)",
         backdropFilter: "blur(4px)",
@@ -27,7 +27,7 @@ const VideoOutput = ({ videoRef, status }: any) => {
         style={{
           width: "100%",
           height: "100%",
-          objectFit: "cover",
+          objectFit: "contain",
           borderRadius: "12px",
         }}
       >
