@@ -45,11 +45,15 @@ export default function VideoComponenet({
     <Group
       align="center"
       h="25vh"
-      bg="rgba(0, 0, 0, 0.5)"
-      justify="space-around"
       px="md"
       py="sm"
-      style={{ borderRadius: "12px" }}
+      justify="space-between"
+      style={{
+        borderRadius: 16,
+        background: "rgba(0, 0, 0, 0.35)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}
     >
       <VideoOutput
         videoRef={videoRef}
@@ -60,58 +64,69 @@ export default function VideoComponenet({
 
       <SimpleGrid
         cols={2}
-        spacing="sm"
-        p="xs"
-        bg="black"
+        spacing="xs"
+        p="sm"
         style={{
-          borderRadius: "8px",
-          border: "2px solid rgba(0, 0, 0, 0.4)",
+          borderRadius: 12,
+          background: "rgba(20,20,22,0.6)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.05)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
         }}
       >
-        <Tooltip label="Mute">
+        <Tooltip label={isMuted ? "Unmute" : "Mute"} withArrow>
           <ActionIcon
             variant="subtle"
-            color="white"
+            color="gray"
+            size="lg"
             onClick={toggleMute}
             disabled={status === "idle"}
+            style={{ opacity: status === "idle" ? 0.35 : 1 }}
           >
-            {isMuted ? <IconVolumeOff /> : <IconVolume />}
+            {isMuted ? <IconVolumeOff size={18} /> : <IconVolume size={18} />}
           </ActionIcon>
         </Tooltip>
-        <Tooltip label="Play">
+
+        <Tooltip label="Start" withArrow>
           <ActionIcon
             variant="subtle"
-            color="white"
+            color="gray"
+            size="lg"
             onClick={() => {
-              if (videoRef.current) {
-                videoRef.current.muted = true;
-                videoRef.current.play().catch(console.error);
-              }
+              videoRef.current && (videoRef.current.muted = true);
+              videoRef.current?.play().catch(console.error);
               initAvatar();
             }}
             disabled={status !== "idle"}
+            style={{ opacity: status !== "idle" ? 0.35 : 1 }}
           >
-            <IconPlayerPlay />
+            <IconPlayerPlay size={18} />
           </ActionIcon>
         </Tooltip>
-        <Tooltip label="Stop">
+
+        <Tooltip label="Stop" withArrow>
           <ActionIcon
             variant="subtle"
-            color="white"
+            color="gray"
+            size="lg"
             onClick={endAvatar}
             disabled={status === "idle"}
+            style={{ opacity: status === "idle" ? 0.35 : 1 }}
           >
-            <IconPlayerStop />
+            <IconPlayerStop size={18} />
           </ActionIcon>
         </Tooltip>
-        <Tooltip label="Interrupt">
+
+        <Tooltip label="Interrupt" withArrow>
           <ActionIcon
             variant="subtle"
-            color="white"
+            color="gray"
+            size="lg"
             onClick={() => avatar?.interrupt?.()}
             disabled={status !== "speaking"}
+            style={{ opacity: status !== "speaking" ? 0.35 : 1 }}
           >
-            <IconPlayerPause />
+            <IconPlayerPause size={18} />
           </ActionIcon>
         </Tooltip>
       </SimpleGrid>

@@ -69,6 +69,7 @@ export default function ChatPage() {
       idealAnswer?: string;
     }[]
   >([]);
+
   const [commentForms, setCommentForms] = useState<{ [key: string]: string }>(
     {}
   );
@@ -93,10 +94,11 @@ export default function ChatPage() {
 
     storeFeedback(messageId, feedback);
   };
+
   const scrollToBottom = () =>
     viewport.current?.scrollTo({
       top: viewport.current.scrollHeight,
-      behavior: "instant",
+      behavior: "smooth",
     });
 
   useEffect(scrollToBottom, [messages]);
@@ -138,6 +140,7 @@ export default function ChatPage() {
       setLoading(false);
     }
   };
+
   const handleCommentClick = (messageId: string) => {
     if (commentForms.hasOwnProperty(messageId)) {
       const updated = { ...commentForms };
@@ -178,12 +181,13 @@ export default function ChatPage() {
   };
 
   return (
-    <AppShell padding="md" header={{ height: 40 }}>
+    <AppShell padding="md" header={{ height: 56 }}>
       <AppShellHeader
         style={{
           backdropFilter: "blur(12px)",
           background: "rgba(16,16,20,0.55)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
         }}
       >
         <Group h="100%" justify="space-between" px="xs" align="center">
@@ -207,6 +211,7 @@ export default function ChatPage() {
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
+
           <Text
             fw={700}
             size="lg"
@@ -221,6 +226,7 @@ export default function ChatPage() {
             onClick={() => toggleColorScheme()}
             size="sm"
             suppressHydrationWarning
+            title="Toggle theme"
           >
             {colorScheme === "dark" ? (
               <IconSun size={20} />
@@ -235,19 +241,22 @@ export default function ChatPage() {
           display: "flex",
           flexDirection: "column",
           gap: "12px",
-          paddingTop: "8px",
-          height: "calc(100vh - 40px)",
+          paddingTop: "70px", // <-- reserve space for header
+          paddingLeft: "12px",
+          paddingRight: "12px",
+          height: "calc(100vh - 56px)",
         }}
       >
+        {/* VIDEO WRAPPER */}
         <div
           style={{
             display: showVideo ? "block" : "none",
             padding: "12px",
             background: "rgba(20,20,25,0.45)",
             borderRadius: "16px",
-            border: "1px solid rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.06)",
             backdropFilter: "blur(10px)",
-            marginBottom: "14px",
+            marginBottom: "6px",
           }}
         >
           <VideoComponenet
@@ -258,6 +267,7 @@ export default function ChatPage() {
           />
         </div>
 
+        {/* CHAT AREA */}
         <ScrollArea
           flex={1}
           viewportRef={viewport}
@@ -267,159 +277,138 @@ export default function ChatPage() {
             borderRadius: "16px",
             backdropFilter: "blur(8px)",
             paddingTop: "8px",
+            paddingBottom: "8px",
+            marginBottom: "6px",
           }}
         >
-          <Stack gap="sm" py="md">
-            {messages.map((msg, index) => (
-              <Paper
-                p="md"
-                radius="lg"
-                shadow="sm"
-                bg={
-                  msg.role === "developer"
-                    ? "rgba(52, 109, 255, 0.75)"
-                    : "rgba(30, 32, 38, 0.55)"
-                }
-                style={{
-                  alignSelf:
-                    msg.role === "developer" ? "flex-end" : "flex-start",
-                  maxWidth: "78%",
-                  backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                }}
-              >
-                <Text c="white" size="sm" style={{ lineHeight: 1.55 }}>
-                  {msg.content[0].text}
-                </Text>
+          <Stack gap="sm" py="md" px="6px">
+            {messages.map((msg, index) => {
+              const isUser = msg.role === "developer";
+              const isAssistant = msg.role === "assistant";
+              const msgId = msg.id ?? `msg-${index}`;
 
-                {msg.role === "assistant" && (
-                  <Group justify="space-between">
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color="grey"
-                      onClick={() => handleCopy(msg.id!, msg.content[0].text)}
-                    >
-                      {copiedId === msg.id ? (
-                        <IconCheck size={16} />
-                      ) : (
-                        <IconCopy />
-                      )}
-                    </ActionIcon>
-                    <Group
-                      gap="xs"
-                      mt="sm"
-                      justify="flex-end"
-                      style={{ opacity: 0.8 }}
-                    >
+              return (
+                <Paper
+                  key={msgId}
+                  p="md"
+                  radius="lg"
+                  shadow="sm"
+                  bg={
+                    msg.role === "developer"
+                      ? "rgba(255,255,255,0.05)"
+                      : "rgba(255,255,255,0.05)"
+                  }
+                  style={{
+                    animation: "fadeIn 0.25s ease",
+                    alignSelf:
+                      msg.role === "developer" ? "flex-end" : "flex-start",
+                    maxWidth: "78%",
+                    border:
+                      msg.role === "assistant"
+                        ? "1px solid rgba(255,255,255,0.08)"
+                        : "none",
+                    backdropFilter:
+                      msg.role === "assistant" ? "blur(10px)" : "none",
+                  }}
+                >
+                  <Text
+                    c="white"
+                    size="sm"
+                    style={{ whiteSpace: "pre-wrap", lineHeight: 1.55 }}
+                  >
+                    {msg.content[0].text}
+                  </Text>
+
+                  {isAssistant && (
+                    <Group justify="space-between" align="center" mt="sm">
                       <ActionIcon
                         size="sm"
                         variant="subtle"
-                        color={
-                          getFeedback(msg.id!)?.isUseful === true
-                            ? "white"
-                            : "grey"
-                        }
-                        onClick={() => {
-                          const current = getFeedback(msg.id!)?.isUseful;
-                          setFeedbackForMessage(msg.id!, {
-                            isUseful: current === true ? null : true,
-                          });
-                        }}
+                        color="grey"
+                        onClick={() => handleCopy(msg.id!, msg.content[0].text)}
+                        title="Copy text"
                       >
-                        <IconThumbUp />
+                        {copiedId === msg.id ? (
+                          <IconCheck size={16} />
+                        ) : (
+                          <IconCopy />
+                        )}
                       </ActionIcon>
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        color={
-                          getFeedback(msg.id!)?.isUseful === false
-                            ? "white"
-                            : "grey"
-                        }
-                        onClick={() => {
-                          const current = getFeedback(msg.id!)?.isUseful;
-                          setFeedbackForMessage(msg.id!, {
-                            isUseful: current === false ? null : false,
-                          });
-                          if (current !== false) {
-                            setIdealAnswerForms({
-                              ...idealAnswerForms,
-                              [msg.id!]:
-                                getFeedback(msg.id!)?.idealAnswer || "",
-                            });
+
+                      <Group
+                        gap="xs"
+                        mt="sm"
+                        justify="flex-end"
+                        style={{ opacity: 0.92 }}
+                      >
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          color={
+                            getFeedback(msg.id!)?.isUseful === true
+                              ? "white"
+                              : "grey"
                           }
-                        }}
-                      >
-                        <IconThumbDown />
-                      </ActionIcon>
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        color={
-                          getFeedback(msg.id!)?.comments ? "white" : "grey"
-                        }
-                        onClick={() => handleCommentClick(msg.id!)}
-                      >
-                        <IconMessageCircle />
-                      </ActionIcon>
-                    </Group>
-                  </Group>
-                )}
+                          onClick={() => {
+                            const current = getFeedback(msg.id!)?.isUseful;
+                            setFeedbackForMessage(msg.id!, {
+                              isUseful: current === true ? null : true,
+                            });
+                          }}
+                          title="Mark useful"
+                        >
+                          <IconThumbUp />
+                        </ActionIcon>
 
-                {commentForms.hasOwnProperty(msg.id!) && (
-                  <Stack gap="xs" mt="sm">
-                    <Textarea
-                      placeholder="Enter your comments..."
-                      value={commentForms[msg.id!] || ""}
-                      onChange={(e: any) =>
-                        setCommentForms({
-                          ...commentForms,
-                          [msg.id!]: e.currentTarget.value,
-                        })
-                      }
-                      rows={3}
-                      size="sm"
-                      radius="md"
-                      styles={{
-                        input: {
-                          background: "rgba(255,255,255,0.08)",
-                          backdropFilter: "blur(6px)",
-                          border: "1px solid rgba(255,255,255,0.1)",
-                        },
-                      }}
-                    />
-                    <Group gap="xs" justify="flex-end">
-                      <Button
-                        size="xs"
-                        variant="default"
-                        onClick={() => {
-                          const updated = { ...commentForms };
-                          delete updated[msg.id!];
-                          setCommentForms(updated);
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="xs"
-                        onClick={() => handleSaveComment(msg.id!)}
-                      >
-                        Save
-                      </Button>
-                    </Group>
-                  </Stack>
-                )}
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          color={
+                            getFeedback(msg.id!)?.isUseful === false
+                              ? "white"
+                              : "grey"
+                          }
+                          onClick={() => {
+                            const current = getFeedback(msg.id!)?.isUseful;
+                            setFeedbackForMessage(msg.id!, {
+                              isUseful: current === false ? null : false,
+                            });
+                            if (current !== false) {
+                              setIdealAnswerForms({
+                                ...idealAnswerForms,
+                                [msg.id!]:
+                                  getFeedback(msg.id!)?.idealAnswer || "",
+                              });
+                            }
+                          }}
+                          title="Mark not useful"
+                        >
+                          <IconThumbDown />
+                        </ActionIcon>
 
-                {getFeedback(msg.id!)?.isUseful === false &&
-                  idealAnswerForms.hasOwnProperty(msg.id!) && (
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          color={
+                            getFeedback(msg.id!)?.comments ? "white" : "grey"
+                          }
+                          onClick={() => handleCommentClick(msg.id!)}
+                          title="Add comment"
+                        >
+                          <IconMessageCircle />
+                        </ActionIcon>
+                      </Group>
+                    </Group>
+                  )}
+
+                  {commentForms.hasOwnProperty(msg.id!) && (
                     <Stack gap="xs" mt="sm">
                       <Textarea
-                        placeholder="Enter the ideal answer..."
-                        value={idealAnswerForms[msg.id!] || ""}
-                        onChange={(e) =>
-                          setIdealAnswerForms({
-                            ...idealAnswerForms,
+                        placeholder="Enter your comments..."
+                        value={commentForms[msg.id!] || ""}
+                        onChange={(e: any) =>
+                          setCommentForms({
+                            ...commentForms,
                             [msg.id!]: e.currentTarget.value,
                           })
                         }
@@ -428,9 +417,9 @@ export default function ChatPage() {
                         radius="md"
                         styles={{
                           input: {
-                            background: "rgba(255,255,255,0.08)",
-                            backdropFilter: "blur(6px)",
-                            border: "1px solid rgba(255,255,255,0.1)",
+                            background: "rgba(255,255,255,0.06)",
+                            backdropFilter: "blur(4px)",
+                            border: "1px solid rgba(255,255,255,0.06)",
                           },
                         }}
                       />
@@ -439,30 +428,78 @@ export default function ChatPage() {
                           size="xs"
                           variant="default"
                           onClick={() => {
-                            const updated = { ...idealAnswerForms };
+                            const updated = { ...commentForms };
                             delete updated[msg.id!];
-                            setIdealAnswerForms(updated);
+                            setCommentForms(updated);
                           }}
                         >
                           Cancel
                         </Button>
                         <Button
                           size="xs"
-                          onClick={() => handleSaveIdealAnswer(msg.id!)}
+                          onClick={() => handleSaveComment(msg.id!)}
                         >
                           Save
                         </Button>
                       </Group>
                     </Stack>
                   )}
-              </Paper>
-            ))}
+
+                  {getFeedback(msg.id!)?.isUseful === false &&
+                    idealAnswerForms.hasOwnProperty(msg.id!) && (
+                      <Stack gap="xs" mt="sm">
+                        <Textarea
+                          placeholder="Enter the ideal answer..."
+                          value={idealAnswerForms[msg.id!] || ""}
+                          onChange={(e) =>
+                            setIdealAnswerForms({
+                              ...idealAnswerForms,
+                              [msg.id!]: e.currentTarget.value,
+                            })
+                          }
+                          rows={3}
+                          size="sm"
+                          radius="md"
+                          styles={{
+                            input: {
+                              background: "rgba(255,255,255,0.06)",
+                              backdropFilter: "blur(4px)",
+                              border: "1px solid rgba(255,255,255,0.06)",
+                            },
+                          }}
+                        />
+                        <Group gap="xs" justify="flex-end">
+                          <Button
+                            size="xs"
+                            variant="default"
+                            onClick={() => {
+                              const updated = { ...idealAnswerForms };
+                              delete updated[msg.id!];
+                              setIdealAnswerForms(updated);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="xs"
+                            onClick={() => handleSaveIdealAnswer(msg.id!)}
+                          >
+                            Save
+                          </Button>
+                        </Group>
+                      </Stack>
+                    )}
+                </Paper>
+              );
+            })}
+
             {loading && (
               <Paper
-                p="sm"
-                radius="md"
-                bg="gray"
-                style={{ alignSelf: "flex-start", maxWidth: "70%" }}
+                p="md"
+                radius="lg"
+                bg="rgba(30,30,34,0.6)"
+                shadow="sm"
+                style={{ alignSelf: "flex-start", maxWidth: "60%" }}
               >
                 <Text c="white" size="sm">
                   ...
@@ -472,46 +509,52 @@ export default function ChatPage() {
           </Stack>
         </ScrollArea>
 
+        {/* INPUT AREA */}
         <Stack
           gap="sm"
           p="sm"
-          bg="rgba(18,18,22,0.5)"
           style={{
             borderRadius: "18px",
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid rgba(255,255,255,0.06)",
             backdropFilter: "blur(12px)",
+            background: "rgba(18,18,22,0.5)",
           }}
         >
-          <Group gap="xs">
+          <Group gap="sm" align="center" style={{ width: "100%" }}>
             <TextInput
               flex={1}
+              placeholder="Type a message"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
               radius="lg"
               size="md"
               styles={{
                 input: {
-                  background: "rgba(255,255,255,0.07)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  backdropFilter: "blur(4px)",
+                  background: "rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(6px)",
+                  border: "1px solid rgba(255,255,255,0.06)",
                 },
               }}
-              placeholder="Type a message..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
             <ActionIcon
               size="lg"
               radius="xl"
               variant="filled"
-              color="blue"
-              style={{
-                boxShadow: "0 0 12px rgba(52,109,255,0.4)",
-              }}
+              color="rgba(255,255,255,0.06)"
               onClick={() => handleSend()}
               disabled={loading}
               title="Send message"
+              style={{
+                boxShadow: "0 6px 18px rgba(255,255,255,0.06)",
+              }}
             >
-              <IconSend size={18} />
+              <IconSend size={20} />
             </ActionIcon>
           </Group>
         </Stack>
