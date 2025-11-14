@@ -96,7 +96,7 @@ export default function ChatPage() {
   const scrollToBottom = () =>
     viewport.current?.scrollTo({
       top: viewport.current.scrollHeight,
-      behavior: "smooth",
+      behavior: "instant",
     });
 
   useEffect(scrollToBottom, [messages]);
@@ -179,7 +179,13 @@ export default function ChatPage() {
 
   return (
     <AppShell padding="md" header={{ height: 40 }}>
-      <AppShellHeader>
+      <AppShellHeader
+        style={{
+          backdropFilter: "blur(12px)",
+          background: "rgba(16,16,20,0.55)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
         <Group h="100%" justify="space-between" px="xs" align="center">
           <Menu>
             <Menu.Target>
@@ -228,10 +234,22 @@ export default function ChatPage() {
         style={{
           display: "flex",
           flexDirection: "column",
+          gap: "12px",
+          paddingTop: "8px",
           height: "calc(100vh - 40px)",
         }}
       >
-        <div style={{ display: showVideo ? "block" : "none" }}>
+        <div
+          style={{
+            display: showVideo ? "block" : "none",
+            padding: "12px",
+            background: "rgba(20,20,25,0.45)",
+            borderRadius: "16px",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(10px)",
+            marginBottom: "14px",
+          }}
+        >
           <VideoComponenet
             avatar={avatar}
             setAvatar={setAvatar}
@@ -240,21 +258,37 @@ export default function ChatPage() {
           />
         </div>
 
-        <ScrollArea flex={1} viewportRef={viewport} px="md">
+        <ScrollArea
+          flex={1}
+          viewportRef={viewport}
+          px="md"
+          style={{
+            background: "rgba(12, 12, 16, 0.35)",
+            borderRadius: "16px",
+            backdropFilter: "blur(8px)",
+            paddingTop: "8px",
+          }}
+        >
           <Stack gap="sm" py="md">
             {messages.map((msg, index) => (
               <Paper
-                key={index}
-                p="sm"
-                radius="md"
-                bg={msg.role === "developer" ? "blue" : "gray"}
+                p="md"
+                radius="lg"
+                shadow="sm"
+                bg={
+                  msg.role === "developer"
+                    ? "rgba(52, 109, 255, 0.75)"
+                    : "rgba(30, 32, 38, 0.55)"
+                }
                 style={{
                   alignSelf:
                     msg.role === "developer" ? "flex-end" : "flex-start",
-                  maxWidth: "70%",
+                  maxWidth: "78%",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255,255,255,0.1)",
                 }}
               >
-                <Text c="white" size="sm">
+                <Text c="white" size="sm" style={{ lineHeight: 1.55 }}>
                   {msg.content[0].text}
                 </Text>
 
@@ -272,7 +306,12 @@ export default function ChatPage() {
                         <IconCopy />
                       )}
                     </ActionIcon>
-                    <Group gap="xs" mt="sm" justify="flex-end">
+                    <Group
+                      gap="xs"
+                      mt="sm"
+                      justify="flex-end"
+                      style={{ opacity: 0.8 }}
+                    >
                       <ActionIcon
                         size="sm"
                         variant="subtle"
@@ -340,7 +379,15 @@ export default function ChatPage() {
                         })
                       }
                       rows={3}
-                      size="xs"
+                      size="sm"
+                      radius="md"
+                      styles={{
+                        input: {
+                          background: "rgba(255,255,255,0.08)",
+                          backdropFilter: "blur(6px)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                        },
+                      }}
                     />
                     <Group gap="xs" justify="flex-end">
                       <Button
@@ -377,7 +424,15 @@ export default function ChatPage() {
                           })
                         }
                         rows={3}
-                        size="xs"
+                        size="sm"
+                        radius="md"
+                        styles={{
+                          input: {
+                            background: "rgba(255,255,255,0.08)",
+                            backdropFilter: "blur(6px)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                          },
+                        }}
                       />
                       <Group gap="xs" justify="flex-end">
                         <Button
@@ -418,14 +473,27 @@ export default function ChatPage() {
         </ScrollArea>
 
         <Stack
-          gap="md"
-          p="md"
-          bg="rgba(0, 0, 0, 0.2)"
-          style={{ borderRadius: "12px" }}
+          gap="sm"
+          p="sm"
+          bg="rgba(18,18,22,0.5)"
+          style={{
+            borderRadius: "18px",
+            border: "1px solid rgba(255,255,255,0.1)",
+            backdropFilter: "blur(12px)",
+          }}
         >
           <Group gap="xs">
             <TextInput
               flex={1}
+              radius="lg"
+              size="md"
+              styles={{
+                input: {
+                  background: "rgba(255,255,255,0.07)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(4px)",
+                },
+              }}
               placeholder="Type a message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -433,11 +501,17 @@ export default function ChatPage() {
             />
             <ActionIcon
               size="lg"
+              radius="xl"
+              variant="filled"
+              color="blue"
+              style={{
+                boxShadow: "0 0 12px rgba(52,109,255,0.4)",
+              }}
               onClick={() => handleSend()}
               disabled={loading}
               title="Send message"
             >
-              <IconSend size={20} />
+              <IconSend size={18} />
             </ActionIcon>
           </Group>
         </Stack>
