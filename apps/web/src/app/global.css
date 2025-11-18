@@ -1,0 +1,47 @@
+/* globals.css */
+* {
+  will-change: transform;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #0a0a0a;
+  color: white;
+  overscroll-behavior: none;
+  font-family: "Inter", sans-serif !important;
+  background: radial-gradient(circle at top, #111 0%, #000 100%);
+  color: white;
+}
+html {
+  scroll-behavior: smooth;
+}
+html,
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+/* Smooth fade for messages */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hide scrollbars like ChatGPT */
+*::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+* {
+  scrollbar-width: none;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(90, 115, 255, 0.4);
+}
