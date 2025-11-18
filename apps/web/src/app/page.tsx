@@ -60,7 +60,7 @@ export default function ChatPage() {
               root: { border: "none", background: "transparent" },
               viewport: { background: "transparent" },
               scrollbar: { background: "transparent" },
-              thumb: { background: "rgba(255,255,255,0.2)" }, // optional
+              thumb: { background: "rgba(255,255,255,0.2)" },
             }}
             style={{
               background: "transparent",
