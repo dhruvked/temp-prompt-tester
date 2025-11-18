@@ -28,61 +28,66 @@ export function MessageActions({
   onThumbsDown,
   onCommentClick,
 }: MessageActionsProps) {
+  const iconSize = isMobile ? 14 : 16;
+  const btnSize = isMobile ? "xs" : "sm";
+
   return (
     <Group
       justify="space-between"
       align="center"
       mt="sm"
       gap={isMobile ? "xs" : "sm"}
+      opacity={0.95}
     >
+      {/* COPY BUTTON */}
       <ActionIcon
-        size={isMobile ? "xs" : "sm"}
+        size={btnSize}
         variant="subtle"
-        color="grey"
+        color="gray.5"
         onClick={onCopy}
         title="Copy text"
+        radius="md"
       >
         {copiedId === msgId ? (
-          <IconCheck size={isMobile ? 14 : 16} />
+          <IconCheck size={iconSize} />
         ) : (
-          <IconCopy size={isMobile ? 14 : 16} />
+          <IconCopy size={iconSize} />
         )}
       </ActionIcon>
 
-      <Group
-        gap={isMobile ? "xs" : "xs"}
-        mt="sm"
-        justify="flex-end"
-        style={{ opacity: 0.92 }}
-      >
+      {/* FEEDBACK GROUP */}
+      <Group gap={isMobile ? "xs" : "xs"} justify="flex-end">
         <ActionIcon
-          size={isMobile ? "xs" : "sm"}
+          size={btnSize}
+          radius="md"
           variant="subtle"
-          color={feedback?.isUseful === true ? "white" : "grey"}
+          color={feedback?.isUseful === true ? "white" : "gray.5"}
           onClick={onThumbsUp}
           title="Mark useful"
         >
-          <IconThumbUp size={isMobile ? 14 : 16} />
+          <IconThumbUp size={iconSize} />
         </ActionIcon>
 
         <ActionIcon
-          size={isMobile ? "xs" : "sm"}
+          size={btnSize}
+          radius="md"
           variant="subtle"
-          color={feedback?.isUseful === false ? "white" : "grey"}
+          color={feedback?.isUseful === false ? "white" : "gray.5"}
           onClick={onThumbsDown}
           title="Mark not useful"
         >
-          <IconThumbDown size={isMobile ? 14 : 16} />
+          <IconThumbDown size={iconSize} />
         </ActionIcon>
 
         <ActionIcon
-          size={isMobile ? "xs" : "sm"}
+          size={btnSize}
+          radius="md"
           variant="subtle"
-          color={feedback?.comments ? "white" : "grey"}
+          color={feedback?.comments ? "white" : "gray.5"}
           onClick={onCommentClick}
           title="Add comment"
         >
-          <IconMessageCircle size={isMobile ? 14 : 16} />
+          <IconMessageCircle size={iconSize} />
         </ActionIcon>
       </Group>
     </Group>

@@ -2,6 +2,7 @@ import { Paper, Text } from "@mantine/core";
 import { CommentForm } from "./CommentForm";
 import { FeedbackForm } from "./FeedbackForm";
 import { MessageActions } from "./MessageActions";
+import { AnimatePresence, motion } from "framer-motion";
 
 type Message = {
   id?: string;
@@ -31,103 +32,135 @@ interface ChatMessageProps {
   onIdeadAnswerCancel: (id: string) => void;
   onCommentCancel: (id: string) => void;
 }
+export function ChatMessage(props: ChatMessageProps) {
+  const {
+    message,
+    isMobile,
+    copiedId,
+    feedback,
+    commentForms,
+    idealAnswerForms,
+    metricsForms,
+    expandedMetrics,
+    onCopy,
+    onThumbsUp,
+    onThumbsDown,
+    onCommentClick,
+    onSaveComment,
+    onCommentChange,
+    onMetricsExpand,
+    onMetricChange,
+    onIdealAnswerChange,
+    onSaveIdealAnswer,
+    onIdeadAnswerCancel,
+    onCommentCancel,
+  } = props;
 
-export function ChatMessage({
-  message,
-  isMobile,
-  copiedId,
-  feedback,
-  commentForms,
-  idealAnswerForms,
-  metricsForms,
-  expandedMetrics,
-  onCopy,
-  onThumbsUp,
-  onThumbsDown,
-  onCommentClick,
-  onSaveComment,
-  onCommentChange,
-  onMetricsExpand,
-  onMetricChange,
-  onIdealAnswerChange,
-  onSaveIdealAnswer,
-  onIdeadAnswerCancel,
-  onCommentCancel,
-}: ChatMessageProps) {
   const msgId = message.id ?? `msg-${Math.random()}`;
   const isAssistant = message.role === "assistant";
   const fbk = feedback.find((f: any) => f.messageId === msgId);
 
-
   return (
-    <Paper
-      p={isMobile ? "sm" : "md"}
-      radius={isMobile ? "md" : "lg"}
-      shadow="sm"
-      bg="rgba(255,255,255,0.05)"
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
       style={{
-        animation: "fadeIn 0.25s ease",
-        alignSelf: message.role === "developer" ? "flex-end" : "flex-start",
-        maxWidth: isMobile ? "90%" : "78%",
-        border: isAssistant ? "1px solid rgba(255,255,255,0.08)" : "none",
-        backdropFilter: isAssistant ? "blur(10px)" : "none",
+        width: "100%",
+        display: "flex",
+        justifyContent:
+          message.role === "developer" ? "flex-end" : "flex-start",
       }}
     >
-      <Text
-        c="white"
-        size={isMobile ? "xs" : "sm"}
-        style={{ whiteSpace: "pre-wrap", lineHeight: 1.55 }}
+      <Paper
+        p={isMobile ? "sm" : "md"}
+        radius={isMobile ? "md" : "lg"}
+        shadow="sm"
+        bg="rgba(255,255,255,0.05)"
+        style={{
+          maxWidth: isMobile ? "90%" : "78%",
+          border: isAssistant ? "1px solid rgba(255,255,255,0.08)" : "none",
+          backdropFilter: isAssistant ? "blur(10px)" : "none",
+        }}
       >
-        {message.content[0].text}
-      </Text>
+        <Text
+          c="white"
+          size={isMobile ? "xs" : "sm"}
+          style={{ whiteSpace: "pre-wrap", lineHeight: 1.55 }}
+        >
+          {message.content[0].text}
+        </Text>
 
-      {isAssistant && (
-        <>
-          <MessageActions
-            msgId={msgId}
-            isMobile={isMobile}
-            copiedId={copiedId}
-            feedback={fbk}
-            onCopy={() => onCopy(msgId, message.content[0].text)}
-            onThumbsUp={() => onThumbsUp(msgId)}
-            onThumbsDown={() => onThumbsDown(msgId)}
-            onCommentClick={() => onCommentClick(msgId)}
-          />
-
-          {commentForms.hasOwnProperty(msgId) && (
-            <CommentForm
-              isMobile={isMobile}
+        {isAssistant && (
+          <>
+            <MessageActions
               msgId={msgId}
-              value={commentForms[msgId]}
-              onChange={(value) => onCommentChange(msgId, value)}
-              onSave={() => onSaveComment(msgId)}
-              onCancel={() => onCommentCancel(msgId)}
+              isMobile={isMobile}
+              copiedId={copiedId}
+              feedback={fbk}
+              onCopy={() => onCopy(msgId, message.content[0].text)}
+              onThumbsUp={() => onThumbsUp(msgId)}
+              onThumbsDown={() => onThumbsDown(msgId)}
+              onCommentClick={() => onCommentClick(msgId)}
             />
-          )}
 
-          {fbk?.isUseful === false &&
-            idealAnswerForms.hasOwnProperty(msgId) && (
-              <FeedbackForm
-                isMobile={isMobile}
-                msgId={msgId}
-                metricsForms={metricsForms}
-                expandedMetrics={expandedMetrics}
-                idealAnswer={idealAnswerForms[msgId]}
-                onMetricsExpand={() =>
-                  onMetricsExpand(expandedMetrics === msgId ? null : msgId)
-                }
-                onMetricChange={(metric, value) =>
-                  onMetricChange(msgId, metric, value)
-                }
-                onIdealAnswerChange={(value) =>
-                  onIdealAnswerChange(msgId, value)
-                }
-                onSave={() => onSaveIdealAnswer(msgId)}
-                onCancel={() => onIdeadAnswerCancel(msgId)}
-              />
-            )}
-        </>
-      )}
-    </Paper>
+            <AnimatePresence mode="popLayout">
+              {commentForms.hasOwnProperty(msgId) && (
+                <motion.div
+                  key="comment"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25 }}
+                  style={{ overflow: "hidden" }}
+                >
+                  <CommentForm
+                    isMobile={isMobile}
+                    msgId={msgId}
+                    value={commentForms[msgId]}
+                    onChange={(value) => onCommentChange(msgId, value)}
+                    onSave={() => onSaveComment(msgId)}
+                    onCancel={() => onCommentCancel(msgId)}
+                  />
+                </motion.div>
+              )}
+
+              {fbk?.isUseful === false &&
+                idealAnswerForms.hasOwnProperty(msgId) && (
+                  <motion.div
+                    key="feedback"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25 }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <FeedbackForm
+                      isMobile={isMobile}
+                      msgId={msgId}
+                      metricsForms={metricsForms}
+                      expandedMetrics={expandedMetrics}
+                      idealAnswer={idealAnswerForms[msgId]}
+                      onMetricsExpand={() =>
+                        onMetricsExpand(
+                          expandedMetrics === msgId ? null : msgId
+                        )
+                      }
+                      onMetricChange={(metric, value) =>
+                        onMetricChange(msgId, metric, value)
+                      }
+                      onIdealAnswerChange={(value) =>
+                        onIdealAnswerChange(msgId, value)
+                      }
+                      onSave={() => onSaveIdealAnswer(msgId)}
+                      onCancel={() => onIdeadAnswerCancel(msgId)}
+                    />
+                  </motion.div>
+                )}
+            </AnimatePresence>
+          </>
+        )}
+      </Paper>
+    </motion.div>
   );
 }

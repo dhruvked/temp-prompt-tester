@@ -79,7 +79,6 @@ export function FeedbackForm({
         background: "rgba(255,255,255,0.04)",
         backdropFilter: "blur(6px)",
         border: "1px solid rgba(255,255,255,0.06)",
-        animation: "fadeIn 0.25s ease",
       }}
     >
       {!isMobile ? (
