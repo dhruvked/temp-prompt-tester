@@ -56,10 +56,14 @@ export default function ChatPage() {
             flex={1}
             viewportRef={viewport}
             px={isMobile ? "xs" : "md"}
+            styles={{
+              root: { border: "none", background: "transparent" },
+              viewport: { background: "transparent" },
+              scrollbar: { background: "transparent" },
+              thumb: { background: "rgba(255,255,255,0.2)" }, // optional
+            }}
             style={{
-              background: "rgba(12, 12, 16, 0.35)",
-              borderRadius: isMobile ? "12px" : "16px",
-              backdropFilter: "blur(8px)",
+              background: "transparent",
               paddingTop: "8px",
               paddingBottom: "8px",
               marginBottom: isMobile ? "4px" : "6px",
