@@ -2,34 +2,21 @@
 import {
   ActionIcon,
   AppShell,
-  AppShellHeader,
   AppShellMain,
   Button,
   Group,
   Stack,
   Text,
   TextInput,
-  useMantineColorScheme,
   Paper,
   ScrollArea,
-  Tabs,
   Textarea,
-  Menu,
-  MenuTarget,
-  MenuDropdown,
-  MenuItem,
 } from "@mantine/core";
 import {
-  IconArrowLeft,
-  IconSun,
-  IconMoon,
   IconSend,
-  IconBookmark,
-  IconSettings,
   IconThumbUp,
   IconThumbDown,
   IconCopy,
-  IconMessage,
   IconMessageCircle,
   IconCheck,
   IconMicrophone,
@@ -46,7 +33,8 @@ type Message = {
 };
 
 export default function ChatPage() {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery("(max-width: 640px)");
+  const isTablet = useMediaQuery("(max-width: 1024px)");
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,6 +42,10 @@ export default function ChatPage() {
   const viewport = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
   const [messageFeedback, setMessageFeedback] = useState<
     {
       messageId: string;
@@ -74,40 +66,7 @@ export default function ChatPage() {
   const [metricsForms, setMetricsForms] = useState<{
     [key: string]: { correctness: number; relevance: number; tone: number };
   }>({});
-  const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-
-  const handleRecordToggle = async () => {
-    if (!isRecording) {
-      // Start recording
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      const chunks: Blob[] = [];
-
-      recorder.ondataavailable = (e) => chunks.push(e.data);
-      recorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: "audio/wav" });
-        const audioFile = new File([audioBlob], "recording.wav", {
-          type: "audio/wav",
-        });
-        const result = await transcribe(audioFile);
-        setInput(result.text);
-        stream.getTracks().forEach((track) => track.stop());
-      };
-
-      recorder.start();
-      setMediaRecorder(recorder);
-      setAudioChunks([]);
-      setIsRecording(true);
-    } else {
-      // Stop recording
-      mediaRecorder?.stop();
-      setIsRecording(false);
-    }
-  };
+  const [expandedMetrics, setExpandedMetrics] = useState<string | null>(null);
 
   const getFeedback = (messageId: string) =>
     messageFeedback.find((f) => f.messageId === messageId);
@@ -170,6 +129,36 @@ export default function ChatPage() {
     }
   };
 
+  const handleRecordToggle = async () => {
+    if (!isRecording) {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: "audio/wav" });
+        const audioFile = new File([audioBlob], "recording.wav", {
+          type: "audio/wav",
+        });
+        try {
+          const result = await transcribe(audioFile);
+          setInput(result.text);
+        } catch (error) {
+          console.error("Transcription error:", error);
+        }
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+    } else {
+      mediaRecorder?.stop();
+      setIsRecording(false);
+    }
+  };
+
   const handleCommentClick = (messageId: string) => {
     if (commentForms.hasOwnProperty(messageId)) {
       const updated = { ...commentForms };
@@ -216,15 +205,12 @@ export default function ChatPage() {
     const updatedMetrics = { ...metricsForms };
     delete updatedMetrics[messageId];
     setMetricsForms(updatedMetrics);
+    setExpandedMetrics(null);
   };
 
   return (
-    <AppShell padding="sm">
-      <AppShellMain
-        style={{
-          height: "calc(100vh)",
-        }}
-      >
+    <AppShell padding={isMobile ? "xs" : "sm"}>
+      <AppShellMain style={{ height: "100vh" }}>
         <div
           style={{
             display: "flex",
@@ -237,38 +223,37 @@ export default function ChatPage() {
           <ScrollArea
             flex={1}
             viewportRef={viewport}
-            px="md"
+            px={isMobile ? "xs" : "md"}
             style={{
               background: "rgba(12, 12, 16, 0.35)",
-              borderRadius: "16px",
+              borderRadius: isMobile ? "12px" : "16px",
               backdropFilter: "blur(8px)",
               paddingTop: "8px",
               paddingBottom: "8px",
-              marginBottom: "6px",
+              marginBottom: isMobile ? "4px" : "6px",
             }}
           >
-            <Stack gap="sm" py="md" px="6px">
+            <Stack
+              gap={isMobile ? "xs" : "sm"}
+              py="md"
+              px={isMobile ? "xs" : "6px"}
+            >
               {messages.map((msg, index) => {
-                const isUser = msg.role === "developer";
                 const isAssistant = msg.role === "assistant";
                 const msgId = msg.id ?? `msg-${index}`;
 
                 return (
                   <Paper
                     key={msgId}
-                    p="md"
-                    radius="lg"
+                    p={isMobile ? "sm" : "md"}
+                    radius={isMobile ? "md" : "lg"}
                     shadow="sm"
-                    bg={
-                      msg.role === "developer"
-                        ? "rgba(255,255,255,0.05)"
-                        : "rgba(255,255,255,0.05)"
-                    }
+                    bg="rgba(255,255,255,0.05)"
                     style={{
                       animation: "fadeIn 0.25s ease",
                       alignSelf:
                         msg.role === "developer" ? "flex-end" : "flex-start",
-                      maxWidth: "78%",
+                      maxWidth: isMobile ? "90%" : "78%",
                       border:
                         msg.role === "assistant"
                           ? "1px solid rgba(255,255,255,0.08)"
@@ -279,16 +264,21 @@ export default function ChatPage() {
                   >
                     <Text
                       c="white"
-                      size="sm"
+                      size={isMobile ? "xs" : "sm"}
                       style={{ whiteSpace: "pre-wrap", lineHeight: 1.55 }}
                     >
                       {msg.content[0].text}
                     </Text>
 
                     {isAssistant && (
-                      <Group justify="space-between" align="center" mt="sm">
+                      <Group
+                        justify="space-between"
+                        align="center"
+                        mt="sm"
+                        gap={isMobile ? "xs" : "sm"}
+                      >
                         <ActionIcon
-                          size="sm"
+                          size={isMobile ? "xs" : "sm"}
                           variant="subtle"
                           color="grey"
                           onClick={() =>
@@ -297,20 +287,20 @@ export default function ChatPage() {
                           title="Copy text"
                         >
                           {copiedId === msg.id ? (
-                            <IconCheck size={16} />
+                            <IconCheck size={isMobile ? 14 : 16} />
                           ) : (
-                            <IconCopy />
+                            <IconCopy size={isMobile ? 14 : 16} />
                           )}
                         </ActionIcon>
 
                         <Group
-                          gap="xs"
+                          gap={isMobile ? "xs" : "xs"}
                           mt="sm"
                           justify="flex-end"
                           style={{ opacity: 0.92 }}
                         >
                           <ActionIcon
-                            size="sm"
+                            size={isMobile ? "xs" : "sm"}
                             variant="subtle"
                             color={
                               getFeedback(msg.id!)?.isUseful === true
@@ -325,11 +315,11 @@ export default function ChatPage() {
                             }}
                             title="Mark useful"
                           >
-                            <IconThumbUp />
+                            <IconThumbUp size={isMobile ? 14 : 16} />
                           </ActionIcon>
 
                           <ActionIcon
-                            size="sm"
+                            size={isMobile ? "xs" : "sm"}
                             variant="subtle"
                             color={
                               getFeedback(msg.id!)?.isUseful === false
@@ -361,11 +351,11 @@ export default function ChatPage() {
                             }}
                             title="Mark not useful"
                           >
-                            <IconThumbDown />
+                            <IconThumbDown size={isMobile ? 14 : 16} />
                           </ActionIcon>
 
                           <ActionIcon
-                            size="sm"
+                            size={isMobile ? "xs" : "sm"}
                             variant="subtle"
                             color={
                               getFeedback(msg.id!)?.comments ? "white" : "grey"
@@ -373,7 +363,7 @@ export default function ChatPage() {
                             onClick={() => handleCommentClick(msg.id!)}
                             title="Add comment"
                           >
-                            <IconMessageCircle />
+                            <IconMessageCircle size={isMobile ? 14 : 16} />
                           </ActionIcon>
                         </Group>
                       </Group>
@@ -390,20 +380,21 @@ export default function ChatPage() {
                               [msg.id!]: e.currentTarget.value,
                             })
                           }
-                          rows={3}
-                          size="sm"
+                          rows={isMobile ? 2 : 3}
+                          size={isMobile ? "xs" : "sm"}
                           radius="md"
                           styles={{
                             input: {
                               background: "rgba(255,255,255,0.06)",
                               backdropFilter: "blur(4px)",
                               border: "1px solid rgba(255,255,255,0.06)",
+                              fontSize: isMobile ? "12px" : "14px",
                             },
                           }}
                         />
                         <Group gap="xs" justify="flex-end">
                           <Button
-                            size="xs"
+                            size={isMobile ? "xs" : "xs"}
                             variant="default"
                             onClick={() => {
                               const updated = { ...commentForms };
@@ -414,7 +405,7 @@ export default function ChatPage() {
                             Cancel
                           </Button>
                           <Button
-                            size="xs"
+                            size={isMobile ? "xs" : "xs"}
                             onClick={() => handleSaveComment(msg.id!)}
                           >
                             Save
@@ -426,100 +417,213 @@ export default function ChatPage() {
                     {getFeedback(msg.id!)?.isUseful === false &&
                       idealAnswerForms.hasOwnProperty(msg.id!) && (
                         <Stack gap="xs" mt="sm">
-                          <Stack gap="xs">
-                            <div>
-                              <Text size="xs" fw={500} mb="xs">
-                                Correctness (1-5)
-                              </Text>
-                              <Group gap="xs">
-                                {[1, 2, 3, 4, 5].map((rating) => (
-                                  <Button
-                                    key={rating}
-                                    variant={
-                                      (metricsForms[msg.id!]?.correctness ||
-                                        0) === rating
-                                        ? "filled"
-                                        : "default"
-                                    }
-                                    size="xs"
-                                    onClick={() =>
-                                      setMetricsForms({
-                                        ...metricsForms,
-                                        [msg.id!]: {
-                                          ...metricsForms[msg.id!],
-                                          correctness: rating,
-                                        },
-                                      })
-                                    }
-                                  >
-                                    {rating}
-                                  </Button>
-                                ))}
-                              </Group>
-                            </div>
+                          {!isMobile ? (
+                            <Stack gap="xs">
+                              <div>
+                                <Text size="xs" fw={500} mb="xs">
+                                  Correctness (1-5)
+                                </Text>
+                                <Group gap="xs">
+                                  {[1, 2, 3, 4, 5].map((rating) => (
+                                    <Button
+                                      key={rating}
+                                      variant={
+                                        (metricsForms[msg.id!]?.correctness ||
+                                          0) === rating
+                                          ? "filled"
+                                          : "default"
+                                      }
+                                      size="xs"
+                                      onClick={() =>
+                                        setMetricsForms({
+                                          ...metricsForms,
+                                          [msg.id!]: {
+                                            ...metricsForms[msg.id!],
+                                            correctness: rating,
+                                          },
+                                        })
+                                      }
+                                    >
+                                      {rating}
+                                    </Button>
+                                  ))}
+                                </Group>
+                              </div>
 
-                            <div>
-                              <Text size="xs" fw={500} mb="xs">
-                                Relevance (1-5)
-                              </Text>
-                              <Group gap="xs">
-                                {[1, 2, 3, 4, 5].map((rating) => (
-                                  <Button
-                                    key={rating}
-                                    variant={
-                                      (metricsForms[msg.id!]?.relevance ||
-                                        0) === rating
-                                        ? "filled"
-                                        : "default"
-                                    }
-                                    size="xs"
-                                    onClick={() =>
-                                      setMetricsForms({
-                                        ...metricsForms,
-                                        [msg.id!]: {
-                                          ...metricsForms[msg.id!],
-                                          relevance: rating,
-                                        },
-                                      })
-                                    }
-                                  >
-                                    {rating}
-                                  </Button>
-                                ))}
-                              </Group>
-                            </div>
+                              <div>
+                                <Text size="xs" fw={500} mb="xs">
+                                  Relevance (1-5)
+                                </Text>
+                                <Group gap="xs">
+                                  {[1, 2, 3, 4, 5].map((rating) => (
+                                    <Button
+                                      key={rating}
+                                      variant={
+                                        (metricsForms[msg.id!]?.relevance ||
+                                          0) === rating
+                                          ? "filled"
+                                          : "default"
+                                      }
+                                      size="xs"
+                                      onClick={() =>
+                                        setMetricsForms({
+                                          ...metricsForms,
+                                          [msg.id!]: {
+                                            ...metricsForms[msg.id!],
+                                            relevance: rating,
+                                          },
+                                        })
+                                      }
+                                    >
+                                      {rating}
+                                    </Button>
+                                  ))}
+                                </Group>
+                              </div>
 
-                            <div>
-                              <Text size="xs" fw={500} mb="xs">
-                                Tone (1-5)
-                              </Text>
-                              <Group gap="xs">
-                                {[1, 2, 3, 4, 5].map((rating) => (
-                                  <Button
-                                    key={rating}
-                                    variant={
-                                      (metricsForms[msg.id!]?.tone || 0) ===
-                                      rating
-                                        ? "filled"
-                                        : "default"
-                                    }
-                                    size="xs"
-                                    onClick={() =>
-                                      setMetricsForms({
-                                        ...metricsForms,
-                                        [msg.id!]: {
-                                          ...metricsForms[msg.id!],
-                                          tone: rating,
-                                        },
-                                      })
-                                    }
-                                  >
-                                    {rating}
-                                  </Button>
-                                ))}
-                              </Group>
-                            </div>
-                          </Stack>
+                              <div>
+                                <Text size="xs" fw={500} mb="xs">
+                                  Tone (1-5)
+                                </Text>
+                                <Group gap="xs">
+                                  {[1, 2, 3, 4, 5].map((rating) => (
+                                    <Button
+                                      key={rating}
+                                      variant={
+                                        (metricsForms[msg.id!]?.tone || 0) ===
+                                        rating
+                                          ? "filled"
+                                          : "default"
+                                      }
+                                      size="xs"
+                                      onClick={() =>
+                                        setMetricsForms({
+                                          ...metricsForms,
+                                          [msg.id!]: {
+                                            ...metricsForms[msg.id!],
+                                            tone: rating,
+                                          },
+                                        })
+                                      }
+                                    >
+                                      {rating}
+                                    </Button>
+                                  ))}
+                                </Group>
+                              </div>
+                            </Stack>
+                          ) : (
+                            <Button
+                              size="xs"
+                              variant="default"
+                              onClick={() =>
+                                setExpandedMetrics(
+                                  expandedMetrics === msg.id! ? null : msg.id!
+                                )
+                              }
+                            >
+                              {expandedMetrics === msg.id!
+                                ? "Hide Metrics"
+                                : "Show Metrics"}
+                            </Button>
+                          )}
+
+                          {isMobile && expandedMetrics === msg.id! && (
+                            <Stack gap="xs">
+                              <div>
+                                <Text size="xs" fw={500} mb="xs">
+                                  Correctness
+                                </Text>
+                                <Group gap="xs">
+                                  {[1, 2, 3, 4, 5].map((rating) => (
+                                    <Button
+                                      key={rating}
+                                      variant={
+                                        (metricsForms[msg.id!]?.correctness ||
+                                          0) === rating
+                                          ? "filled"
+                                          : "default"
+                                      }
+                                      size="xs"
+                                      onClick={() =>
+                                        setMetricsForms({
+                                          ...metricsForms,
+                                          [msg.id!]: {
+                                            ...metricsForms[msg.id!],
+                                            correctness: rating,
+                                          },
+                                        })
+                                      }
+                                    >
+                                      {rating}
+                                    </Button>
+                                  ))}
+                                </Group>
+                              </div>
+
+                              <div>
+                                <Text size="xs" fw={500} mb="xs">
+                                  Relevance
+                                </Text>
+                                <Group gap="xs">
+                                  {[1, 2, 3, 4, 5].map((rating) => (
+                                    <Button
+                                      key={rating}
+                                      variant={
+                                        (metricsForms[msg.id!]?.relevance ||
+                                          0) === rating
+                                          ? "filled"
+                                          : "default"
+                                      }
+                                      size="xs"
+                                      onClick={() =>
+                                        setMetricsForms({
+                                          ...metricsForms,
+                                          [msg.id!]: {
+                                            ...metricsForms[msg.id!],
+                                            relevance: rating,
+                                          },
+                                        })
+                                      }
+                                    >
+                                      {rating}
+                                    </Button>
+                                  ))}
+                                </Group>
+                              </div>
+
+                              <div>
+                                <Text size="xs" fw={500} mb="xs">
+                                  Tone
+                                </Text>
+                                <Group gap="xs">
+                                  {[1, 2, 3, 4, 5].map((rating) => (
+                                    <Button
+                                      key={rating}
+                                      variant={
+                                        (metricsForms[msg.id!]?.tone || 0) ===
+                                        rating
+                                          ? "filled"
+                                          : "default"
+                                      }
+                                      size="xs"
+                                      onClick={() =>
+                                        setMetricsForms({
+                                          ...metricsForms,
+                                          [msg.id!]: {
+                                            ...metricsForms[msg.id!],
+                                            tone: rating,
+                                          },
+                                        })
+                                      }
+                                    >
+                                      {rating}
+                                    </Button>
+                                  ))}
+                                </Group>
+                              </div>
+                            </Stack>
+                          )}
 
                           <Textarea
                             placeholder="Enter the ideal answer..."
@@ -530,20 +634,21 @@ export default function ChatPage() {
                                 [msg.id!]: e.currentTarget.value,
                               })
                             }
-                            rows={3}
-                            size="sm"
+                            rows={isMobile ? 2 : 3}
+                            size={isMobile ? "xs" : "sm"}
                             radius="md"
                             styles={{
                               input: {
                                 background: "rgba(255,255,255,0.06)",
                                 backdropFilter: "blur(4px)",
                                 border: "1px solid rgba(255,255,255,0.06)",
+                                fontSize: isMobile ? "12px" : "14px",
                               },
                             }}
                           />
                           <Group gap="xs" justify="flex-end">
                             <Button
-                              size="xs"
+                              size={isMobile ? "xs" : "xs"}
                               variant="default"
                               onClick={() => {
                                 const updated = { ...idealAnswerForms };
@@ -557,7 +662,7 @@ export default function ChatPage() {
                               Cancel
                             </Button>
                             <Button
-                              size="xs"
+                              size={isMobile ? "xs" : "xs"}
                               onClick={() => handleSaveIdealAnswer(msg.id!)}
                             >
                               Save
@@ -571,13 +676,13 @@ export default function ChatPage() {
 
               {loading && (
                 <Paper
-                  p="md"
-                  radius="lg"
+                  p={isMobile ? "sm" : "md"}
+                  radius={isMobile ? "md" : "lg"}
                   bg="rgba(30,30,34,0.6)"
                   shadow="sm"
                   style={{ alignSelf: "flex-start", maxWidth: "60%" }}
                 >
-                  <Text c="white" size="sm">
+                  <Text c="white" size={isMobile ? "xs" : "sm"}>
                     ...
                   </Text>
                 </Paper>
@@ -587,19 +692,23 @@ export default function ChatPage() {
 
           {/* INPUT AREA */}
           <Stack
-            gap="sm"
-            p="sm"
+            gap={isMobile ? "xs" : "sm"}
+            p={isMobile ? "xs" : "sm"}
             style={{
-              borderRadius: "18px",
+              borderRadius: isMobile ? "12px" : "18px",
               border: "1px solid rgba(255,255,255,0.06)",
               backdropFilter: "blur(12px)",
               background: "rgba(18,18,22,0.5)",
             }}
           >
-            <Group gap="sm" align="center" style={{ width: "100%" }}>
+            <Group
+              gap={isMobile ? "xs" : "sm"}
+              align="center"
+              style={{ width: "100%" }}
+            >
               <TextInput
                 flex={1}
-                placeholder="Type a message"
+                placeholder={isMobile ? "Message..." : "Type a message"}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -609,31 +718,33 @@ export default function ChatPage() {
                   }
                 }}
                 radius="lg"
-                size="md"
+                size={isMobile ? "sm" : "md"}
                 styles={{
                   input: {
                     background: "rgba(255,255,255,0.06)",
                     backdropFilter: "blur(6px)",
                     border: "1px solid rgba(255,255,255,0.06)",
+                    fontSize: isMobile ? "12px" : "14px",
                   },
                 }}
               />
               <ActionIcon
-                size="lg"
+                size={isMobile ? "md" : "lg"}
                 radius="xl"
                 variant="filled"
                 color={isRecording ? "red" : "rgba(255,255,255,0.06)"}
                 onClick={handleRecordToggle}
                 title={isRecording ? "Stop recording" : "Start recording"}
+                style={{
+                  boxShadow: isRecording
+                    ? "0 0 12px rgba(255,0,0,0.5)"
+                    : "0 6px 18px rgba(255,255,255,0.06)",
+                }}
               >
-                {isRecording ? (
-                  <IconMicrophone size={20} />
-                ) : (
-                  <IconMicrophone size={20} />
-                )}
+                <IconMicrophone size={isMobile ? 16 : 20} />
               </ActionIcon>
               <ActionIcon
-                size="lg"
+                size={isMobile ? "md" : "lg"}
                 radius="xl"
                 variant="filled"
                 color="rgba(255,255,255,0.06)"
@@ -644,7 +755,7 @@ export default function ChatPage() {
                   boxShadow: "0 6px 18px rgba(255,255,255,0.06)",
                 }}
               >
-                <IconSend size={20} />
+                <IconSend size={isMobile ? 16 : 20} />
               </ActionIcon>
             </Group>
           </Stack>
