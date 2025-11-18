@@ -59,6 +59,9 @@ export default function ChatPage() {
       isUseful?: boolean | null;
       comments?: string;
       idealAnswer?: string;
+      correctness?: number;
+      relevance?: number;
+      tone?: number;
     }[]
   >([]);
   const [commentForms, setCommentForms] = useState<{ [key: string]: string }>(
@@ -66,6 +69,9 @@ export default function ChatPage() {
   );
   const [idealAnswerForms, setIdealAnswerForms] = useState<{
     [key: string]: string;
+  }>({});
+  const [metricsForms, setMetricsForms] = useState<{
+    [key: string]: { correctness: number; relevance: number; tone: number };
   }>({});
 
   const getFeedback = (messageId: string) =>
@@ -160,12 +166,21 @@ export default function ChatPage() {
 
   const handleSaveIdealAnswer = (messageId: string) => {
     const answerText = idealAnswerForms[messageId]?.trim();
+    const metrics = metricsForms[messageId] || {
+      correctness: 0,
+      relevance: 0,
+      tone: 0,
+    };
     setFeedbackForMessage(messageId, {
       idealAnswer: answerText || null,
+      ...metrics,
     });
     const updated = { ...idealAnswerForms };
     delete updated[messageId];
     setIdealAnswerForms(updated);
+    const updatedMetrics = { ...metricsForms };
+    delete updatedMetrics[messageId];
+    setMetricsForms(updatedMetrics);
   };
 
   return (
@@ -297,6 +312,16 @@ export default function ChatPage() {
                                   [msg.id!]:
                                     getFeedback(msg.id!)?.idealAnswer || "",
                                 });
+                                setMetricsForms({
+                                  ...metricsForms,
+                                  [msg.id!]: {
+                                    correctness:
+                                      getFeedback(msg.id!)?.correctness || 0,
+                                    relevance:
+                                      getFeedback(msg.id!)?.relevance || 0,
+                                    tone: getFeedback(msg.id!)?.tone || 0,
+                                  },
+                                });
                               }
                             }}
                             title="Mark not useful"
@@ -366,6 +391,101 @@ export default function ChatPage() {
                     {getFeedback(msg.id!)?.isUseful === false &&
                       idealAnswerForms.hasOwnProperty(msg.id!) && (
                         <Stack gap="xs" mt="sm">
+                          <Stack gap="xs">
+                            <div>
+                              <Text size="xs" fw={500} mb="xs">
+                                Correctness (1-5)
+                              </Text>
+                              <Group gap="xs">
+                                {[1, 2, 3, 4, 5].map((rating) => (
+                                  <Button
+                                    key={rating}
+                                    variant={
+                                      (metricsForms[msg.id!]?.correctness ||
+                                        0) === rating
+                                        ? "filled"
+                                        : "default"
+                                    }
+                                    size="xs"
+                                    onClick={() =>
+                                      setMetricsForms({
+                                        ...metricsForms,
+                                        [msg.id!]: {
+                                          ...metricsForms[msg.id!],
+                                          correctness: rating,
+                                        },
+                                      })
+                                    }
+                                  >
+                                    {rating}
+                                  </Button>
+                                ))}
+                              </Group>
+                            </div>
+
+                            <div>
+                              <Text size="xs" fw={500} mb="xs">
+                                Relevance (1-5)
+                              </Text>
+                              <Group gap="xs">
+                                {[1, 2, 3, 4, 5].map((rating) => (
+                                  <Button
+                                    key={rating}
+                                    variant={
+                                      (metricsForms[msg.id!]?.relevance ||
+                                        0) === rating
+                                        ? "filled"
+                                        : "default"
+                                    }
+                                    size="xs"
+                                    onClick={() =>
+                                      setMetricsForms({
+                                        ...metricsForms,
+                                        [msg.id!]: {
+                                          ...metricsForms[msg.id!],
+                                          relevance: rating,
+                                        },
+                                      })
+                                    }
+                                  >
+                                    {rating}
+                                  </Button>
+                                ))}
+                              </Group>
+                            </div>
+
+                            <div>
+                              <Text size="xs" fw={500} mb="xs">
+                                Tone (1-5)
+                              </Text>
+                              <Group gap="xs">
+                                {[1, 2, 3, 4, 5].map((rating) => (
+                                  <Button
+                                    key={rating}
+                                    variant={
+                                      (metricsForms[msg.id!]?.tone || 0) ===
+                                      rating
+                                        ? "filled"
+                                        : "default"
+                                    }
+                                    size="xs"
+                                    onClick={() =>
+                                      setMetricsForms({
+                                        ...metricsForms,
+                                        [msg.id!]: {
+                                          ...metricsForms[msg.id!],
+                                          tone: rating,
+                                        },
+                                      })
+                                    }
+                                  >
+                                    {rating}
+                                  </Button>
+                                ))}
+                              </Group>
+                            </div>
+                          </Stack>
+
                           <Textarea
                             placeholder="Enter the ideal answer..."
                             value={idealAnswerForms[msg.id!] || ""}
@@ -394,6 +514,9 @@ export default function ChatPage() {
                                 const updated = { ...idealAnswerForms };
                                 delete updated[msg.id!];
                                 setIdealAnswerForms(updated);
+                                const updatedMetrics = { ...metricsForms };
+                                delete updatedMetrics[msg.id!];
+                                setMetricsForms(updatedMetrics);
                               }}
                             >
                               Cancel
