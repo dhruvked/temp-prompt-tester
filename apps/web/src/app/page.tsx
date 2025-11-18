@@ -32,10 +32,11 @@ import {
   IconMessage,
   IconMessageCircle,
   IconCheck,
+  IconMicrophone,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { getResponse, storeFeedback } from "@/api/helpers";
+import { getResponse, storeFeedback, transcribe } from "@/api/helpers";
 import { useMediaQuery } from "@mantine/hooks";
 
 type Message = {
@@ -73,6 +74,40 @@ export default function ChatPage() {
   const [metricsForms, setMetricsForms] = useState<{
     [key: string]: { correctness: number; relevance: number; tone: number };
   }>({});
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+
+  const handleRecordToggle = async () => {
+    if (!isRecording) {
+      // Start recording
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: "audio/wav" });
+        const audioFile = new File([audioBlob], "recording.wav", {
+          type: "audio/wav",
+        });
+        const result = await transcribe(audioFile);
+        setInput(result.text);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setAudioChunks([]);
+      setIsRecording(true);
+    } else {
+      // Stop recording
+      mediaRecorder?.stop();
+      setIsRecording(false);
+    }
+  };
 
   const getFeedback = (messageId: string) =>
     messageFeedback.find((f) => f.messageId === messageId);
@@ -583,6 +618,20 @@ export default function ChatPage() {
                   },
                 }}
               />
+              <ActionIcon
+                size="lg"
+                radius="xl"
+                variant="filled"
+                color={isRecording ? "red" : "rgba(255,255,255,0.06)"}
+                onClick={handleRecordToggle}
+                title={isRecording ? "Stop recording" : "Start recording"}
+              >
+                {isRecording ? (
+                  <IconMicrophone size={20} />
+                ) : (
+                  <IconMicrophone size={20} />
+                )}
+              </ActionIcon>
               <ActionIcon
                 size="lg"
                 radius="xl"
