@@ -36,8 +36,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { getResponse, storeFeedback } from "@/api/helpers";
-import VideoComponenet from "@/components/VideoComponent";
-import handleSpeak from "@/api/handleSpeakUSED";
 import { useMediaQuery } from "@mantine/hooks";
 
 type Message = {
@@ -49,20 +47,12 @@ type Message = {
 export default function ChatPage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme({
-    keepTransitions: true,
-  });
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [session_id] = useState(() => crypto.randomUUID());
   const viewport = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [avatar, setAvatar] = useState<any>(null);
-  const [status, setStatus] = useState<any>("idle");
-  const [showVideo, setShowVideo] = useState(true);
-
   const [messageFeedback, setMessageFeedback] = useState<
     {
       messageId: string;
@@ -71,7 +61,6 @@ export default function ChatPage() {
       idealAnswer?: string;
     }[]
   >([]);
-
   const [commentForms, setCommentForms] = useState<{ [key: string]: string }>(
     {}
   );
@@ -131,9 +120,6 @@ export default function ChatPage() {
         content: [{ type: "output_text", text: response.text }],
       };
 
-      if (avatar) {
-        await handleSpeak(avatar, response.text, status);
-      }
       updatedMessages = [...updatedMessages, assistantMessage];
       setMessages(updatedMessages);
     } catch (error) {
@@ -183,97 +169,12 @@ export default function ChatPage() {
   };
 
   return (
-    <AppShell padding="md" header={{ height: 56 }}>
-      <AppShellHeader
-        style={{
-          backdropFilter: "blur(12px)",
-          background: "rgba(16,16,20,0.55)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-        }}
-      >
-        <Group h="100%" justify="space-between" px="xs" align="center">
-          <Menu>
-            <Menu.Target>
-              <ActionIcon
-                variant="transparent"
-                c="white"
-                size="lg"
-                style={{
-                  transform: isSettingsOpen ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "transform 0.3s ease",
-                }}
-              >
-                <IconSettings size={24} />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item onClick={() => setShowVideo(!showVideo)}>
-                {showVideo ? "Hide Video" : "Show Video"}
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-
-          <Text
-            fw={700}
-            size="lg"
-            onClick={() => router.back()}
-            style={{ cursor: "pointer" }}
-          >
-            Choreo Avatar
-          </Text>
-
-          <ActionIcon
-            variant="default"
-            onClick={() => toggleColorScheme()}
-            size="sm"
-            suppressHydrationWarning
-            title="Toggle theme"
-          >
-            {colorScheme === "dark" ? (
-              <IconSun size={20} />
-            ) : (
-              <IconMoon size={20} />
-            )}
-          </ActionIcon>
-        </Group>
-      </AppShellHeader>
+    <AppShell padding="sm">
       <AppShellMain
         style={{
-          display: "flex",
-          flexDirection: isMobile ? "column" : "row",
-
-          gap: "12px",
-          paddingTop: "70px", // <-- reserve space for header
-          paddingLeft: "12px",
-          paddingRight: "12px",
-          height: "calc(100vh - 56px)",
+          height: "calc(100vh)",
         }}
       >
-        {/* VIDEO WRAPPER */}
-        <div
-          style={{
-            display: showVideo ? (isMobile ? "block" : "flex") : "none",
-            flexDirection: "column",
-
-            padding: "12px",
-            background: "rgba(20,20,25,0.45)",
-            borderRadius: "16px",
-            border: "1px solid rgba(255,255,255,0.06)",
-            backdropFilter: "blur(10px)",
-            marginBottom: "6px",
-          }}
-        >
-          <VideoComponenet
-            avatar={avatar}
-            setAvatar={setAvatar}
-            status={status}
-            setStatus={setStatus}
-            isMobile={isMobile}
-          />
-        </div>
-
-        {/* CHAT AREA */}
         <div
           style={{
             display: "flex",
@@ -281,7 +182,6 @@ export default function ChatPage() {
             flex: 1,
             minWidth: 0,
             height: "100%",
-            gap: "12px",
           }}
         >
           <ScrollArea

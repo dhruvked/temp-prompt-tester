@@ -26,7 +26,9 @@ const getResponse = async (
 const storeFeedback = async (
   messageId: string,
   feedback: {
-    accuracy?: number;
+    correctness?: number;
+    relevance?: number;
+    tone?: number;
     comments?: string;
     idealAnswer?: string;
     isUseful?: boolean | null;
