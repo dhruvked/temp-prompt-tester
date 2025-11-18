@@ -1,4 +1,4 @@
-import { Stack, Group, TextInput, ActionIcon } from "@mantine/core";
+import { Stack, Group, TextInput, ActionIcon, Textarea } from "@mantine/core";
 import { IconMicrophone, IconSend } from "@tabler/icons-react";
 
 interface InputAreaProps {
@@ -38,25 +38,28 @@ export function InputArea({
         align="center"
         style={{ width: "100%" }}
       >
-        <TextInput
-          flex={1}
-          placeholder={isMobile ? "Message..." : "Type a message"}
+        <Textarea
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
+          placeholder={isMobile ? "Message..." : "Type a message"}
+          autosize
+          minRows={1}
+          maxRows={isMobile ? 4 : 6}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              setInput("");
               onSend();
+              setInput("");
             }
           }}
+          style={{ flex: 1, width: "100%" }}
           radius="lg"
           size={isMobile ? "sm" : "md"}
           styles={{
             input: {
               background: "rgba(255,255,255,0.06)",
-              backdropFilter: "blur(6px)",
               border: "1px solid rgba(255,255,255,0.06)",
+              backdropFilter: "blur(6px)",
               fontSize: isMobile ? "12px" : "14px",
             },
           }}
@@ -69,9 +72,7 @@ export function InputArea({
           onClick={onRecordToggle}
           title={isRecording ? "Stop recording" : "Start recording"}
           style={{
-            boxShadow: isRecording
-              ? "0 0 12px rgba(255,0,0,0.5)"
-              : "0 6px 18px rgba(255,255,255,0.06)",
+            animation: isRecording ? "pulseRecord 1.2s infinite" : "none",
           }}
         >
           <IconMicrophone size={isMobile ? 16 : 20} />

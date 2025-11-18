@@ -45,3 +45,23 @@ body {
 ::selection {
   background: rgba(90, 115, 255, 0.4);
 }
+@keyframes pulseRecord {
+  0% {
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(255, 0, 0, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.4);
+  }
+}
+.mono-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+.mono-btn-strong:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}

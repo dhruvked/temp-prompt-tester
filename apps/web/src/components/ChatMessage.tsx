@@ -58,6 +58,7 @@ export function ChatMessage({
   const isAssistant = message.role === "assistant";
   const fbk = feedback.find((f: any) => f.messageId === msgId);
 
+
   return (
     <Paper
       p={isMobile ? "sm" : "md"}
