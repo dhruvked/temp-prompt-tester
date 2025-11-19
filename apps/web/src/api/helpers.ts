@@ -67,6 +67,8 @@ const transcribe = async (audioFile: File) => {
   });
 
   const data = await response.json();
+  if (!response.ok) throw new Error("Failed to store feedback");
+
   return data;
 };
 
