@@ -1,54 +1,85 @@
-import { useState } from "react";
-import { transcribe } from "@/api/helpers";
+import { useState, useRef } from "react";
 
-export function useRecording(onTranscribe: (text: string) => void) {
+export function useRecording(
+  onTranscribe: (text: string, isFinal: boolean) => void
+) {
   const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
-
-  function cleanTranscription(text: string): string {
-    return text
-      .replace(/\([^)]*\)/g, "")
-      .replace(/\[[^\]]*\]/g, "")
-      .replace(/\*[^*]*\*/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+  const wsRef = useRef<WebSocket | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const handleRecordToggle = async () => {
     if (!isRecording) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-        const recorder = new MediaRecorder(stream);
-        const chunks: Blob[] = [];
+        // Get token from your backend
+        const tokenRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/elevenlabsToken`
+        );
+        const { token } = await tokenRes.json();
 
-        recorder.ondataavailable = (e) => chunks.push(e.data);
-        recorder.onstop = async () => {
-          const audioBlob = new Blob(chunks, { type: "audio/wav" });
-          const audioFile = new File([audioBlob], "recording.wav", {
-            type: "audio/wav",
+        // Connect to WebSocket
+        const ws = new WebSocket(
+          `wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_realtime_v2&sample_rate=16000`,
+          ["token", token]
+        );
+
+        ws.onopen = async () => {
+          // Get microphone stream
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: { sampleRate: 16000 },
           });
-          try {
-            const result = await transcribe(audioFile);
-            const cleaned = cleanTranscription(result.text);
-            onTranscribe(cleaned);
-          } catch (error) {
-            console.error("Transcription error:", error);
-          }
-          stream.getTracks().forEach((track) => track.stop());
+          streamRef.current = stream;
+
+          // Setup audio processing
+          const audioContext = new AudioContext({ sampleRate: 16000 });
+          audioContextRef.current = audioContext;
+          const source = audioContext.createMediaStreamSource(stream);
+          const processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+          processor.onaudioprocess = (e) => {
+            if (ws.readyState === WebSocket.OPEN) {
+              const audioData = e.inputBuffer.getChannelData(0);
+              const pcm16 = new Int16Array(audioData.length);
+              for (let i = 0; i < audioData.length; i++) {
+                pcm16[i] = Math.max(
+                  -32768,
+                  Math.min(32767, audioData[i] * 32768)
+                );
+              }
+              const base64 = btoa(
+                String.fromCharCode(...new Uint8Array(pcm16.buffer))
+              );
+              ws.send(JSON.stringify({ audio: base64 }));
+            }
+          };
+
+          source.connect(processor);
+          processor.connect(audioContext.destination);
         };
 
-        recorder.start();
-        setMediaRecorder(recorder);
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.type === "partial_transcript") {
+            onTranscribe(data.text, false);
+          } else if (data.type === "committed_transcript") {
+            onTranscribe(data.text, true);
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket error:", error);
+        };
+
+        wsRef.current = ws;
         setIsRecording(true);
       } catch (error) {
-        console.error("Microphone error:", error);
+        console.error("Recording error:", error);
       }
     } else {
-      mediaRecorder?.stop();
+      // Stop recording
+      wsRef.current?.close();
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      audioContextRef.current?.close();
       setIsRecording(false);
     }
   };
