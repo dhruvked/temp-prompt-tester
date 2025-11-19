@@ -7,6 +7,15 @@ export function useRecording(onTranscribe: (text: string) => void) {
     null
   );
 
+  function cleanTranscription(text: string): string {
+    return text
+      .replace(/\([^)]*\)/g, "")
+      .replace(/\[[^\]]*\]/g, "")
+      .replace(/\*[^*]*\*/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   const handleRecordToggle = async () => {
     if (!isRecording) {
       try {
@@ -24,7 +33,8 @@ export function useRecording(onTranscribe: (text: string) => void) {
           });
           try {
             const result = await transcribe(audioFile);
-            onTranscribe(result.text);
+            const cleaned = cleanTranscription(result.text);
+            onTranscribe(cleaned);
           } catch (error) {
             console.error("Transcription error:", error);
           }
