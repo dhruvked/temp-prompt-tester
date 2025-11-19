@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { transcribe } from "@/api/helpers";
-import { useScribe } from "@elevenlabs/react";
+import { CommitStrategy, useScribe } from "@elevenlabs/react";
 
 export function useRecording(onTranscribe: (text: string) => void) {
   const [isRecording, setIsRecording] = useState(false);
@@ -41,16 +41,17 @@ export function useRecording(onTranscribe: (text: string) => void) {
     if (!isRecording) {
       const token = await fetchTokenFromServer();
 
-      await scribe.connect({
+      console.log(token);
+      const connection = await scribe.connect({
         token,
         microphone: {
           echoCancellation: true,
           noiseSuppression: true,
         },
       });
-
       setIsRecording(true);
     } else {
+      scribe.commit;
       scribe.disconnect();
       setIsRecording(false);
     }
