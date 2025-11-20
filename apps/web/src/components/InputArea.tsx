@@ -1,5 +1,5 @@
 import { Stack, Group, TextInput, ActionIcon, Textarea } from "@mantine/core";
-import { IconMicrophone, IconSend } from "@tabler/icons-react";
+import { IconMicrophone, IconSend, IconSquare } from "@tabler/icons-react";
 
 interface InputAreaProps {
   isMobile: boolean;
@@ -73,9 +73,14 @@ export function InputArea({
           title={isRecording ? "Stop recording" : "Start recording"}
           style={{
             animation: isRecording ? "pulseRecord 1.2s infinite" : "none",
+            transition: "0.2s ease",
           }}
         >
-          <IconMicrophone size={isMobile ? 16 : 20} />
+          {isRecording ? (
+            <IconSquare size={isMobile ? 16 : 20} /> // Stop button icon
+          ) : (
+            <IconMicrophone size={isMobile ? 16 : 20} />
+          )}
         </ActionIcon>
         <ActionIcon
           size={isMobile ? "md" : "lg"}
