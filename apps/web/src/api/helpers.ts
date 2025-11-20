@@ -88,4 +88,11 @@ const transcribe = async (audioFile: File) => {
   return data;
 };
 
-export { getResponse, storeFeedback, transcribe };
+async function fetchTokenFromServer() {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/elevenlabsToken`
+  );
+  const data = await res.json();
+  return data.token;
+}
+export { getResponse, storeFeedback, transcribe, fetchTokenFromServer };

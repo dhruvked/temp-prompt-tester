@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { transcribe } from "@/api/helpers";
+import { fetchTokenFromServer, transcribe } from "@/api/helpers";
 import { CommitStrategy, useScribe } from "@elevenlabs/react";
 
-export function useRecording(onTranscribe: (text: string) => void) {
+export function useRecording(
+  onTranscribe: (text: string) => void,
+  voiceToken: string,
+  setVoiceToken: (text: string) => void
+) {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null
@@ -15,14 +19,6 @@ export function useRecording(onTranscribe: (text: string) => void) {
       .replace(/\*[^*]*\*/g, "")
       .replace(/\s+/g, " ")
       .trim();
-  }
-
-  async function fetchTokenFromServer() {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/elevenlabsToken`
-    );
-    const data = await res.json();
-    return data.token;
   }
 
   const scribe = useScribe({
@@ -39,8 +35,7 @@ export function useRecording(onTranscribe: (text: string) => void) {
 
   const handleRecordToggle = async () => {
     if (!isRecording) {
-      const token = await fetchTokenFromServer();
-
+      const token = voiceToken;
       console.log(token);
       const connection = await scribe.connect({
         token,
@@ -51,6 +46,7 @@ export function useRecording(onTranscribe: (text: string) => void) {
       });
       setIsRecording(true);
     } else {
+      fetchTokenFromServer().then(setVoiceToken);
       scribe.commit;
       scribe.disconnect();
       setIsRecording(false);

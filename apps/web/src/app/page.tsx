@@ -14,6 +14,7 @@ import { InputArea } from "@/components/InputArea";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useFeedback } from "@/hooks/useFeedback";
 import { useRecording } from "@/hooks/useRecording";
+import { fetchTokenFromServer } from "@/api/helpers";
 
 export default function ChatPage() {
   const isMobile = useMediaQuery("(max-width: 640px)");
@@ -21,10 +22,17 @@ export default function ChatPage() {
 
   const { messages, loading, handleSend: chatHandleSend } = useChatMessages();
   const [input, setInput] = useState("");
+  const [voiceToken, setVoiceToken] = useState("");
+
+  useEffect(() => {
+    fetchTokenFromServer().then(setVoiceToken);
+  }, []);
 
   const feedback = useFeedback();
-  const { isRecording, handleRecordToggle } = useRecording((text) =>
-    setInput(text)
+  const { isRecording, handleRecordToggle } = useRecording(
+    (text) => setInput(text),
+    voiceToken,
+    setVoiceToken
   );
 
   const scrollToBottom = () =>
