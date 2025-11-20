@@ -54,6 +54,22 @@ const storeFeedback = async (
   return response.json();
 };
 
+export const generateSpeech = async (text: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/textToSpeech`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    }
+  );
+
+  if (!res.ok) throw new Error("TTS generation failed");
+
+  const arrayBuffer = await res.arrayBuffer();
+  return new Blob([arrayBuffer], { type: "audio/mpeg" });
+};
+
 const transcribe = async (audioFile: File) => {
   const formData = new FormData();
   formData.append("model_id", "scribe_v1");

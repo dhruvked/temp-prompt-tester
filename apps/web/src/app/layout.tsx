@@ -5,6 +5,9 @@ import "@/app/global.css";
 export const metadata = {
   title: "Choreo AI Training App",
   description: "AI-assisted evaluation and feedback",
+};
+
+export const viewport = {
   themeColor: "#000000",
 };
 

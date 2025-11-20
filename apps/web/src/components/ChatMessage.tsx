@@ -3,6 +3,7 @@ import { CommentForm } from "./CommentForm";
 import { FeedbackForm } from "./FeedbackForm";
 import { MessageActions } from "./MessageActions";
 import { AnimatePresence, motion } from "framer-motion";
+import { generateSpeech } from "@/api/helpers";
 
 type Message = {
   id?: string;
@@ -32,6 +33,7 @@ interface ChatMessageProps {
   onIdeadAnswerCancel: (id: string) => void;
   onCommentCancel: (id: string) => void;
 }
+
 export function ChatMessage(props: ChatMessageProps) {
   const {
     message,
@@ -59,6 +61,19 @@ export function ChatMessage(props: ChatMessageProps) {
   const msgId = message.id ?? `msg-${Math.random()}`;
   const isAssistant = message.role === "assistant";
   const fbk = feedback.find((f: any) => f.messageId === msgId);
+
+  const handlePlayTTS = async () => {
+    try {
+      const text = message.content[0].text;
+      const audioBlob = await generateSpeech(text);
+      const url = URL.createObjectURL(audioBlob);
+
+      const audio = new Audio(url);
+      audio.play();
+    } catch (err) {
+      console.error("TTS error:", err);
+    }
+  };
 
   return (
     <motion.div
@@ -102,6 +117,7 @@ export function ChatMessage(props: ChatMessageProps) {
               onThumbsUp={() => onThumbsUp(msgId)}
               onThumbsDown={() => onThumbsDown(msgId)}
               onCommentClick={() => onCommentClick(msgId)}
+              onPlayTTS={handlePlayTTS}
             />
 
             <AnimatePresence mode="popLayout">

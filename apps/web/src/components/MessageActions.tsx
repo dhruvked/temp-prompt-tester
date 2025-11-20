@@ -5,6 +5,7 @@ import {
   IconThumbUp,
   IconThumbDown,
   IconMessageCircle,
+  IconVolume,
 } from "@tabler/icons-react";
 
 interface MessageActionsProps {
@@ -16,6 +17,7 @@ interface MessageActionsProps {
   onThumbsUp: () => void;
   onThumbsDown: () => void;
   onCommentClick: () => void;
+  onPlayTTS?: () => void;
 }
 
 export function MessageActions({
@@ -27,6 +29,7 @@ export function MessageActions({
   onThumbsUp,
   onThumbsDown,
   onCommentClick,
+  onPlayTTS,
 }: MessageActionsProps) {
   const iconSize = isMobile ? 14 : 16;
   const btnSize = isMobile ? "xs" : "sm";
@@ -88,6 +91,15 @@ export function MessageActions({
           title="Add comment"
         >
           <IconMessageCircle size={iconSize} />
+        </ActionIcon>
+        <ActionIcon
+          size={isMobile ? "xs" : "sm"}
+          variant="subtle"
+          color="grey"
+          onClick={() => onPlayTTS?.()}
+          title="Play audio"
+        >
+          <IconVolume size={isMobile ? 14 : 16} />
         </ActionIcon>
       </Group>
     </Group>
