@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { fetchTokenFromServer, transcribe } from "@/api/helpers";
+import { useState, useRef } from "react";
+import { fetchTokenFromServer } from "@/api/helpers";
 import { CommitStrategy, useScribe } from "@elevenlabs/react";
 
 export function useVoiceMode(
@@ -8,39 +8,49 @@ export function useVoiceMode(
   setVoiceToken: (text: string) => void
 ) {
   const [isVoiceMode, setVoiceMode] = useState(false);
+  const connectingRef = useRef(false);
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
-    onCommittedTranscript: (data) => {
-      console.log("committed", data.text);
-      onSend(data.text);
-    },
-    onPartialTranscript: (data) => {
-      console.log("partial", data.text, scribe.partialTranscript);
+    onCommittedTranscript: async (data) => {
+      if (data.text !== "") {
+        onSend(data.text);
+      }
     },
   });
 
   const handleVoiceModeToggle = async () => {
-    if (!isVoiceMode) {
-      console.log(voiceToken);
-      const token = voiceToken;
-      const connection = await scribe.connect({
-        token,
-        microphone: {
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-        commitStrategy: CommitStrategy.VAD,
-        vadSilenceThresholdSecs: 1.5,
-        minSilenceDurationMs: 100,
-        vadThreshold: 0.2,
-      });
-      console.log(connection);
-      setVoiceMode(true);
-    } else {
-      fetchTokenFromServer().then(setVoiceToken);
-      scribe.disconnect();
-      setVoiceMode(false);
+    // Prevent double taps / double toggles
+    if (connectingRef.current) return;
+    connectingRef.current = true;
+
+    try {
+      if (!isVoiceMode) {
+        // Activate
+        const connection = await scribe.connect({
+          token: voiceToken,
+          microphone: {
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+          commitStrategy: CommitStrategy.VAD,
+          vadSilenceThresholdSecs: 1,
+          minSilenceDurationMs: 100,
+          vadThreshold: 0.2,
+        });
+
+        setVoiceMode(true);
+      } else {
+        // Deactivate
+        scribe.disconnect();
+        setVoiceMode(false);
+
+        // refresh token for next activation
+        const newToken = await fetchTokenFromServer();
+        setVoiceToken(newToken);
+      }
+    } finally {
+      connectingRef.current = false;
     }
   };
 

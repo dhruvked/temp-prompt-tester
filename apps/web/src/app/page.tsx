@@ -18,9 +18,15 @@ import { fetchTokenFromServer } from "@/api/helpers";
 import { useVoiceMode } from "@/hooks/useVoiceMode";
 
 export default function ChatPage() {
+  const session_idRef = useRef<string>(crypto.randomUUID());
   const isMobile = useMediaQuery("(max-width: 640px)");
   const viewport = useRef<HTMLDivElement>(null);
-  const { messages, loading, handleSend: chatHandleSend } = useChatMessages();
+  const {
+    messages,
+    loading,
+    handleSend: chatHandleSend,
+  } = useChatMessages(session_idRef.current);
+
   const [input, setInput] = useState("");
   const [voiceToken, setVoiceToken] = useState("");
   const [mute, setMute] = useState(false);
