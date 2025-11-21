@@ -31,12 +31,12 @@ export default function ChatPage() {
 
   const [input, setInput] = useState("");
   const [voiceToken, setVoiceToken] = useState("");
-  const [mute, setMute] = useState(false);
-  const { isVoiceMode, handleVoiceModeToggle } = useVoiceMode(
+  const { isVoiceMode, handleVoiceModeToggle, mute, toggleMute } = useVoiceMode(
     handleVoiceTranscript,
     voiceToken,
     setVoiceToken
   );
+
   const {
     messages,
     loading,
@@ -162,7 +162,7 @@ export default function ChatPage() {
             onRecordToggle={handleRecordToggle}
             setInput={setInput}
             mute={mute}
-            onToggleMute={() => setMute((prev) => !prev)}
+            onToggleMute={toggleMute}
             isVoiceMode={isVoiceMode}
             onVoiceModeToggle={handleVoiceModeToggle}
           />

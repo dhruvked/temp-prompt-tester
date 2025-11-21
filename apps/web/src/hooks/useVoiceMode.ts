@@ -9,10 +9,17 @@ export function useVoiceMode(
 ) {
   const [isVoiceMode, setVoiceMode] = useState(false);
   const connectingRef = useRef(false);
+  const [mute, setMute] = useState(false);
+  const muteRef = useRef(false);
+
+  // Keep ref in sync with state
+  muteRef.current = mute;
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
     onCommittedTranscript: async (data) => {
+      if (muteRef.current) return;
+
       if (data.text !== "") {
         onTranscript(data.text);
       }
@@ -53,8 +60,12 @@ export function useVoiceMode(
     }
   };
 
+  const toggleMute = () => setMute((m) => !m);
+
   return {
     isVoiceMode,
     handleVoiceModeToggle,
+    mute,
+    toggleMute,
   };
 }

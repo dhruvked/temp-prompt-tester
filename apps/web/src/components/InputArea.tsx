@@ -7,12 +7,14 @@ import {
   Button,
 } from "@mantine/core";
 import {
+  IconCross,
   IconMicrophone,
   IconSend,
   IconSquare,
   IconVolume,
   IconVolumeOff,
   IconWaveSine,
+  IconX,
 } from "@tabler/icons-react";
 
 interface InputAreaProps {
@@ -75,6 +77,7 @@ export function InputArea({
           onChange={(e) => onInputChange(e.target.value)}
           placeholder="Type a message..."
           autosize
+          miw={isMobile ? "250px" : "300px"}
           minRows={1}
           maxRows={4}
           onKeyDown={(e) => {
@@ -165,7 +168,7 @@ export function InputArea({
           size={isMobile ? 36 : 40}
           radius="xl"
           variant="subtle"
-          color={isVoiceMode ? "white" : "gray"}
+          color="gray"
           onClick={onVoiceModeToggle}
           disabled={loading}
           title="Voice Mode"
@@ -175,10 +178,10 @@ export function InputArea({
           }}
         >
           {isVoiceMode ? (
-            <IconVolumeOff size={isMobile ? 18 : 20} />
+            <IconX size={isMobile ? 18 : 20} />
           ) : (
             <IconWaveSine size={isMobile ? 18 : 20} />
-          )}{" "}
+          )}
         </ActionIcon>
       )}
     </Group>
