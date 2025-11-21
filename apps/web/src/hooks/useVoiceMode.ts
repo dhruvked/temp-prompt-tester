@@ -1,34 +1,28 @@
 import { useState } from "react";
 import { fetchTokenFromServer, transcribe } from "@/api/helpers";
 import { CommitStrategy, useScribe } from "@elevenlabs/react";
-import { connection } from "next/server";
 
-export function useRecording(
-  onTranscribe: (text: string) => void,
+export function useVoiceMode(
+  onSend: (text: string) => void,
   voiceToken: string,
   setVoiceToken: (text: string) => void
 ) {
-  const [isRecording, setIsRecording] = useState(false);
-
-  function cleanTranscription(text: string): string {
-    return text
-      .replace(/\([^)]*\)/g, "")
-      .replace(/\[[^\]]*\]/g, "")
-      .replace(/\*[^*]*\*/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+  const [isVoiceMode, setVoiceMode] = useState(false);
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
+    onCommittedTranscript: (data) => {
+      console.log("committed", data.text);
+      onSend(data.text);
+    },
     onPartialTranscript: (data) => {
-      const cleaned = cleanTranscription(data.text);
-      onTranscribe(cleaned);
+      console.log("partial", data.text);
     },
   });
 
-  const handleRecordToggle = async () => {
-    if (!isRecording) {
+  const handleVoiceModeToggle = async () => {
+    if (!isVoiceMode) {
+      console.log(voiceToken);
       const token = voiceToken;
       const connection = await scribe.connect({
         token,
@@ -36,17 +30,20 @@ export function useRecording(
           echoCancellation: true,
           noiseSuppression: true,
         },
+        commitStrategy: CommitStrategy.VAD,
+        vadSilenceThresholdSecs: 1.5,
       });
-      setIsRecording(true);
+      console.log(connection);
+      setVoiceMode(true);
     } else {
       fetchTokenFromServer().then(setVoiceToken);
       scribe.disconnect();
-      setIsRecording(false);
+      setVoiceMode(false);
     }
   };
 
   return {
-    isRecording,
-    handleRecordToggle,
+    isVoiceMode,
+    handleVoiceModeToggle,
   };
 }

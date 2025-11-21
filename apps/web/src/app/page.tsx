@@ -15,11 +15,11 @@ import { useChatMessages } from "@/hooks/useChatMessages";
 import { useFeedback } from "@/hooks/useFeedback";
 import { useRecording } from "@/hooks/useRecording";
 import { fetchTokenFromServer } from "@/api/helpers";
+import { useVoiceMode } from "@/hooks/useVoiceMode";
 
 export default function ChatPage() {
   const isMobile = useMediaQuery("(max-width: 640px)");
   const viewport = useRef<HTMLDivElement>(null);
-  const [voiceMode, setVoiceMode] = useState(false);
   const { messages, loading, handleSend: chatHandleSend } = useChatMessages();
   const [input, setInput] = useState("");
   const [voiceToken, setVoiceToken] = useState("");
@@ -38,6 +38,11 @@ export default function ChatPage() {
     setVoiceToken
   );
 
+  const { isVoiceMode, handleVoiceModeToggle } = useVoiceMode(
+    chatHandleSend,
+    voiceToken,
+    setVoiceToken
+  );
   const scrollToBottom = () =>
     viewport.current?.scrollTo({
       top: viewport.current.scrollHeight,
@@ -47,8 +52,9 @@ export default function ChatPage() {
   useEffect(scrollToBottom, [messages]);
 
   const handleSend = async () => {
-    await chatHandleSend(input);
+    const input_text = input;
     setInput("");
+    await chatHandleSend(input_text);
   };
 
   return (
@@ -139,10 +145,10 @@ export default function ChatPage() {
             onSend={handleSend}
             onRecordToggle={handleRecordToggle}
             setInput={setInput}
-            voiceMode={voiceMode}
-            setVoiceMode={setVoiceMode}
             mute={mute}
             onToggleMute={() => setMute((prev) => !prev)}
+            isVoiceMode={isVoiceMode}
+            onVoiceModeToggle={handleVoiceModeToggle}
           />
         </div>
       </AppShellMain>

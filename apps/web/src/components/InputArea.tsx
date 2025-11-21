@@ -24,10 +24,10 @@ interface InputAreaProps {
   onSend: () => void;
   onRecordToggle: () => void;
   setInput: (input: string) => void;
-  voiceMode: boolean;
-  setVoiceMode: (flag: boolean) => void;
   mute: boolean;
   onToggleMute: () => void;
+  isVoiceMode: boolean;
+  onVoiceModeToggle: () => void;
 }
 
 export function InputArea({
@@ -39,10 +39,10 @@ export function InputArea({
   onSend,
   onRecordToggle,
   setInput,
-  voiceMode,
-  setVoiceMode,
   mute,
   onToggleMute,
+  isVoiceMode,
+  onVoiceModeToggle,
 }: InputAreaProps) {
   return (
     <Group
@@ -65,9 +65,9 @@ export function InputArea({
         style={{
           flex: 1,
           transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-          opacity: voiceMode ? 0 : 1,
-          transform: voiceMode ? "scale(0.95)" : "scale(1)",
-          display: voiceMode ? "none" : "block",
+          opacity: isVoiceMode ? 0 : 1,
+          transform: isVoiceMode ? "scale(0.95)" : "scale(1)",
+          display: isVoiceMode ? "none" : "block",
         }}
       >
         <Textarea
@@ -99,7 +99,7 @@ export function InputArea({
         />
       </div>
 
-      {voiceMode && (
+      {isVoiceMode && (
         <ActionIcon
           size={isMobile ? 36 : 40}
           radius="xl"
@@ -120,7 +120,7 @@ export function InputArea({
         </ActionIcon>
       )}
 
-      {!voiceMode && (
+      {!isVoiceMode && (
         <ActionIcon
           size={isMobile ? 36 : 40}
           radius="xl"
@@ -166,7 +166,7 @@ export function InputArea({
           radius="xl"
           variant="subtle"
           color="gray"
-          onClick={() => setVoiceMode(!voiceMode)}
+          onClick={onVoiceModeToggle}
           disabled={loading}
           title="Voice Mode"
           style={{
