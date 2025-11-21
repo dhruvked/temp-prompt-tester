@@ -165,7 +165,7 @@ export function InputArea({
           size={isMobile ? 36 : 40}
           radius="xl"
           variant="subtle"
-          color="gray"
+          color={isVoiceMode ? "white" : "gray"}
           onClick={onVoiceModeToggle}
           disabled={loading}
           title="Voice Mode"
@@ -174,7 +174,11 @@ export function InputArea({
             animation: "fadeIn 0.3s ease",
           }}
         >
-          <IconWaveSine size={isMobile ? 18 : 20} />
+          {isVoiceMode ? (
+            <IconVolumeOff size={isMobile ? 18 : 20} />
+          ) : (
+            <IconWaveSine size={isMobile ? 18 : 20} />
+          )}{" "}
         </ActionIcon>
       )}
     </Group>

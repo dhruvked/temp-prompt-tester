@@ -3,7 +3,7 @@ import { fetchTokenFromServer } from "@/api/helpers";
 import { CommitStrategy, useScribe } from "@elevenlabs/react";
 
 export function useVoiceMode(
-  onSend: (text: string) => void,
+  onTranscript: (text: string) => void,
   voiceToken: string,
   setVoiceToken: (text: string) => void
 ) {
@@ -14,7 +14,7 @@ export function useVoiceMode(
     modelId: "scribe_v2_realtime",
     onCommittedTranscript: async (data) => {
       if (data.text !== "") {
-        onSend(data.text);
+        onTranscript(data.text);
       }
     },
   });
@@ -38,7 +38,6 @@ export function useVoiceMode(
           minSilenceDurationMs: 100,
           vadThreshold: 0.2,
         });
-
         setVoiceMode(true);
       } else {
         // Deactivate

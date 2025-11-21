@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { getResponse } from "@/api/helpers";
-
 type Message = {
   id?: string;
   role: "developer" | "assistant";
   content: [{ type: "input_text" | "output_text"; text: string }];
 };
 
-export function useChatMessages(session_id: string) {
+export function useChatMessages(
+  session_id: string,
+  speak: (message: string) => void,
+  isVoiceModeRef: React.RefObject<boolean>
+) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -38,6 +41,9 @@ export function useChatMessages(session_id: string) {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      if (isVoiceModeRef.current) {
+        speak(response.text);
+      }
     } catch (error) {
       console.error("Error:", error);
     } finally {

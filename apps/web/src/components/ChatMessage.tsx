@@ -33,8 +33,9 @@ interface ChatMessageProps {
   onIdeadAnswerCancel: (id: string) => void;
   onCommentCancel: (id: string) => void;
   isSpeaking: boolean;
-  onToggleSpeaking: () => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
+  onSpeak: (text: string) => void;
+  onCancelSpeak: () => void;
 }
 
 export function ChatMessage(props: ChatMessageProps) {
@@ -60,58 +61,66 @@ export function ChatMessage(props: ChatMessageProps) {
     onIdeadAnswerCancel,
     onCommentCancel,
     isSpeaking,
-    onToggleSpeaking,
     audioRef,
+    onSpeak,
+    onCancelSpeak,
   } = props;
 
   const msgId = message.id ?? `msg-${Math.random()}`;
   const isAssistant = message.role === "assistant";
   const fbk = feedback.find((f: any) => f.messageId === msgId);
 
-  const handlePlayTTS = async () => {
-    try {
-      if (audioRef.current) {
-        const oldSrc = audioRef.current.src;
-        audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current = null;
-        if (oldSrc) URL.revokeObjectURL(oldSrc);
-        return;
-      }
+  // const handlePlayTTS = async () => {
+  //   try {
+  //     if (audioRef.current) {
+  //       const oldSrc = audioRef.current.src;
+  //       audioRef.current.pause();
+  //       audioRef.current.src = "";
+  //       audioRef.current = null;
+  //       if (oldSrc) URL.revokeObjectURL(oldSrc);
+  //       return;
+  //     }
 
-      // Start new audio
-      const text = message.content[0].text;
-      const blob = await generateSpeech(text);
-      const audioUrl = URL.createObjectURL(blob);
+  //     // Start new audio
+  //     const text = message.content[0].text;
+  //     const blob = await generateSpeech(text);
+  //     const audioUrl = URL.createObjectURL(blob);
 
-      const audio = new Audio(audioUrl);
+  //     const audio = new Audio(audioUrl);
 
-      // Attach handlers BEFORE setting ref and playing
-      audio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
-        onToggleSpeaking();
-        audioRef.current = null;
-      };
+  //     // Attach handlers BEFORE setting ref and playing
+  //     audio.onended = () => {
+  //       URL.revokeObjectURL(audioUrl);
+  //       onToggleSpeaking();
+  //       audioRef.current = null;
+  //     };
 
-      audio.onerror = (e) => {
-        URL.revokeObjectURL(audioUrl);
-        onToggleSpeaking();
-        audioRef.current = null;
-      };
+  //     audio.onerror = (e) => {
+  //       URL.revokeObjectURL(audioUrl);
+  //       onToggleSpeaking();
+  //       audioRef.current = null;
+  //     };
 
-      audioRef.current = audio;
-      onToggleSpeaking();
+  //     audioRef.current = audio;
+  //     onToggleSpeaking();
 
-      await audio.play();
-    } catch (err) {
-      console.error("TTS error:", err);
-      onToggleSpeaking();
-      if (audioRef.current) {
-        audioRef.current = null;
-      }
+  //     await audio.play();
+  //   } catch (err) {
+  //     console.error("TTS error:", err);
+  //     onToggleSpeaking();
+  //     if (audioRef.current) {
+  //       audioRef.current = null;
+  //     }
+  //   }
+  // };
+  const handlePlayTTS = () => {
+    if (audioRef.current) {
+      onCancelSpeak(); // stop current speech
+    } else {
+      onSpeak(message.content[0].text); // speak message
     }
   };
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -156,7 +165,6 @@ export function ChatMessage(props: ChatMessageProps) {
               onCommentClick={() => onCommentClick(msgId)}
               onPlayTTS={handlePlayTTS}
               isSpeaking={isSpeaking}
-              onToggleSpeaking={onToggleSpeaking}
             />
 
             <AnimatePresence mode="popLayout">

@@ -16,22 +16,32 @@ import { useFeedback } from "@/hooks/useFeedback";
 import { useRecording } from "@/hooks/useRecording";
 import { fetchTokenFromServer } from "@/api/helpers";
 import { useVoiceMode } from "@/hooks/useVoiceMode";
+import { useSpeech } from "@/hooks/useSpeech";
 
 export default function ChatPage() {
   const session_idRef = useRef<string>(crypto.randomUUID());
   const isMobile = useMediaQuery("(max-width: 640px)");
   const viewport = useRef<HTMLDivElement>(null);
-  const {
-    messages,
-    loading,
-    handleSend: chatHandleSend,
-  } = useChatMessages(session_idRef.current);
+  const { speak, cancelSpeech, isSpeaking, audioRef } = useSpeech();
+  const isVoiceModeRef = useRef(false);
+
+  const handleVoiceTranscript = (text: string) => {
+    chatHandleSend(text);
+  };
 
   const [input, setInput] = useState("");
   const [voiceToken, setVoiceToken] = useState("");
   const [mute, setMute] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { isVoiceMode, handleVoiceModeToggle } = useVoiceMode(
+    handleVoiceTranscript,
+    voiceToken,
+    setVoiceToken
+  );
+  const {
+    messages,
+    loading,
+    handleSend: chatHandleSend,
+  } = useChatMessages(session_idRef.current, speak, isVoiceModeRef);
 
   useEffect(() => {
     fetchTokenFromServer().then(setVoiceToken);
@@ -44,11 +54,6 @@ export default function ChatPage() {
     setVoiceToken
   );
 
-  const { isVoiceMode, handleVoiceModeToggle } = useVoiceMode(
-    chatHandleSend,
-    voiceToken,
-    setVoiceToken
-  );
   const scrollToBottom = () =>
     viewport.current?.scrollTo({
       top: viewport.current.scrollHeight,
@@ -56,6 +61,10 @@ export default function ChatPage() {
     });
 
   useEffect(scrollToBottom, [messages]);
+
+  useEffect(() => {
+    isVoiceModeRef.current = isVoiceMode;
+  }, [isVoiceMode]);
 
   const handleSend = async () => {
     const input_text = input;
@@ -120,9 +129,10 @@ export default function ChatPage() {
                   onSaveIdealAnswer={feedback.handleSaveIdealAnswer}
                   onIdeadAnswerCancel={feedback.handleCancelIdealAnswer}
                   onCommentCancel={feedback.handleCancelComment}
-                  isSpeaking={speaking}
-                  onToggleSpeaking={() => setSpeaking((prev) => !prev)}
                   audioRef={audioRef}
+                  isSpeaking={isSpeaking}
+                  onSpeak={speak}
+                  onCancelSpeak={cancelSpeech}
                 />
               ))}
 

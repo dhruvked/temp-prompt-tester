@@ -20,7 +20,6 @@ interface MessageActionsProps {
   onCommentClick: () => void;
   onPlayTTS?: () => void;
   isSpeaking: boolean;
-  onToggleSpeaking: () => void;
 }
 
 export function MessageActions({
@@ -34,7 +33,6 @@ export function MessageActions({
   onCommentClick,
   onPlayTTS,
   isSpeaking,
-  onToggleSpeaking,
 }: MessageActionsProps) {
   const iconSize = isMobile ? 14 : 16;
   const btnSize = isMobile ? "xs" : "sm";
@@ -100,7 +98,7 @@ export function MessageActions({
         <ActionIcon
           size={isMobile ? "xs" : "sm"}
           variant="subtle"
-          color={"gray.5"}
+          color={isSpeaking ? "red" : "gray.5"}
           radius="md"
           onClick={onPlayTTS}
           title={isSpeaking ? "Stop audio" : "Play audio"}
