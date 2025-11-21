@@ -65,10 +65,10 @@ export function ChatMessage(props: ChatMessageProps) {
   const handlePlayTTS = async () => {
     try {
       const text = message.content[0].text;
-      const audioBlob = await generateSpeech(text);
-      const url = URL.createObjectURL(audioBlob);
+      const reader = await generateSpeech(text);
+      const audioUrl = URL.createObjectURL(reader);
 
-      const audio = new Audio(url);
+      const audio = new Audio(audioUrl);
       audio.play();
     } catch (err) {
       console.error("TTS error:", err);

@@ -64,10 +64,9 @@ export const generateSpeech = async (text: string) => {
     }
   );
 
-  if (!res.ok) throw new Error("TTS generation failed");
+  if (!res.ok) throw new Error("TTS failed");
 
-  const arrayBuffer = await res.arrayBuffer();
-  return new Blob([arrayBuffer], { type: "audio/mpeg" });
+  return await res.blob();
 };
 
 const transcribe = async (audioFile: File) => {

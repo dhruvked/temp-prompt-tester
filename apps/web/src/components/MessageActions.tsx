@@ -95,7 +95,8 @@ export function MessageActions({
         <ActionIcon
           size={isMobile ? "xs" : "sm"}
           variant="subtle"
-          color="grey"
+          color="gray.5"
+          radius="md"
           onClick={() => onPlayTTS?.()}
           title="Play audio"
         >

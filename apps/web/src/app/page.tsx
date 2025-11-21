@@ -19,7 +19,7 @@ import { fetchTokenFromServer } from "@/api/helpers";
 export default function ChatPage() {
   const isMobile = useMediaQuery("(max-width: 640px)");
   const viewport = useRef<HTMLDivElement>(null);
-
+  const [voiceMode, setVoiceMode] = useState(false);
   const { messages, loading, handleSend: chatHandleSend } = useChatMessages();
   const [input, setInput] = useState("");
   const [voiceToken, setVoiceToken] = useState("");
@@ -133,6 +133,8 @@ export default function ChatPage() {
             onSend={handleSend}
             onRecordToggle={handleRecordToggle}
             setInput={setInput}
+            voiceMode={voiceMode}
+            setVoiceMode={setVoiceMode}
           />
         </div>
       </AppShellMain>

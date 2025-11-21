@@ -1,5 +1,10 @@
 import { Stack, Group, TextInput, ActionIcon, Textarea } from "@mantine/core";
-import { IconMicrophone, IconSend, IconSquare } from "@tabler/icons-react";
+import {
+  IconMicrophone,
+  IconSend,
+  IconSquare,
+  IconWaveSine,
+} from "@tabler/icons-react";
 
 interface InputAreaProps {
   isMobile: boolean;
@@ -10,6 +15,8 @@ interface InputAreaProps {
   onSend: () => void;
   onRecordToggle: () => void;
   setInput: (input: string) => void;
+  voiceMode: boolean;
+  setVoiceMode: (flag: boolean) => void;
 }
 
 export function InputArea({
@@ -21,23 +28,22 @@ export function InputArea({
   onSend,
   onRecordToggle,
   setInput,
+  voiceMode,
+  setVoiceMode,
 }: InputAreaProps) {
   return (
-    <Stack
+    <Group
       gap={isMobile ? "xs" : "sm"}
-      p={isMobile ? "xs" : "sm"}
+      align="center"
       style={{
+        width: "100%",
         borderRadius: isMobile ? "12px" : "18px",
         border: "1px solid rgba(255,255,255,0.06)",
         backdropFilter: "blur(12px)",
         background: "rgba(18,18,22,0.5)",
       }}
     >
-      <Group
-        gap={isMobile ? "xs" : "sm"}
-        align="center"
-        style={{ width: "100%" }}
-      >
+      {!voiceMode && (
         <Textarea
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
@@ -64,6 +70,9 @@ export function InputArea({
             },
           }}
         />
+      )}
+      {voiceMode && <></>}
+      {!voiceMode && (
         <ActionIcon
           size={isMobile ? "md" : "lg"}
           radius="xl"
@@ -82,6 +91,8 @@ export function InputArea({
             <IconMicrophone size={isMobile ? 16 : 20} />
           )}
         </ActionIcon>
+      )}
+      {input && (
         <ActionIcon
           size={isMobile ? "md" : "lg"}
           radius="xl"
@@ -96,7 +107,23 @@ export function InputArea({
         >
           <IconSend size={isMobile ? 16 : 20} />
         </ActionIcon>
-      </Group>
-    </Stack>
+      )}
+      {!input && (
+        <ActionIcon
+          size={isMobile ? "md" : "lg"}
+          radius="xl"
+          variant="filled"
+          color="rgba(255,255,255,0.06)"
+          onClick={() => setVoiceMode(!voiceMode)}
+          disabled={loading}
+          title="Voice Mode"
+          style={{
+            boxShadow: "0 6px 18px rgba(255,255,255,0.06)",
+          }}
+        >
+          <IconWaveSine size={isMobile ? 16 : 20} />
+        </ActionIcon>
+      )}
+    </Group>
   );
 }
