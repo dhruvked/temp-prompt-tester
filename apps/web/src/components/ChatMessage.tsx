@@ -1,4 +1,4 @@
-import { Paper, Text } from "@mantine/core";
+import { Center, Paper, Text } from "@mantine/core";
 import { CommentForm } from "./CommentForm";
 import { FeedbackForm } from "./FeedbackForm";
 import { MessageActions } from "./MessageActions";
@@ -128,7 +128,9 @@ export function ChatMessage(props: ChatMessageProps) {
       transition={{ duration: 0.25 }}
       style={{
         width: "100%",
+        maxWidth: "700px",
         display: "flex",
+        margin: "0 auto",
         justifyContent:
           message.role === "developer" ? "flex-end" : "flex-start",
       }}
