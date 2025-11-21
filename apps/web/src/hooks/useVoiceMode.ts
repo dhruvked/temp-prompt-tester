@@ -16,7 +16,7 @@ export function useVoiceMode(
       onSend(data.text);
     },
     onPartialTranscript: (data) => {
-      console.log("partial", data.text);
+      console.log("partial", data.text, scribe.partialTranscript);
     },
   });
 
@@ -32,6 +32,8 @@ export function useVoiceMode(
         },
         commitStrategy: CommitStrategy.VAD,
         vadSilenceThresholdSecs: 1.5,
+        minSilenceDurationMs: 100,
+        vadThreshold: 0.2,
       });
       console.log(connection);
       setVoiceMode(true);
