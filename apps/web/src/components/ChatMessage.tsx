@@ -32,6 +32,9 @@ interface ChatMessageProps {
   onSaveIdealAnswer: (id: string) => void;
   onIdeadAnswerCancel: (id: string) => void;
   onCommentCancel: (id: string) => void;
+  isSpeaking: boolean;
+  onToggleSpeaking: () => void;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
 }
 
 export function ChatMessage(props: ChatMessageProps) {
@@ -56,6 +59,9 @@ export function ChatMessage(props: ChatMessageProps) {
     onSaveIdealAnswer,
     onIdeadAnswerCancel,
     onCommentCancel,
+    isSpeaking,
+    onToggleSpeaking,
+    audioRef,
   } = props;
 
   const msgId = message.id ?? `msg-${Math.random()}`;
@@ -64,17 +70,53 @@ export function ChatMessage(props: ChatMessageProps) {
 
   const handlePlayTTS = async () => {
     try {
+      if (audioRef.current) {
+        const oldSrc = audioRef.current.src;
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+        if (oldSrc) URL.revokeObjectURL(oldSrc);
+      }
+
+      // If this message is already speaking, just stop
+      if (isSpeaking) {
+        onToggleSpeaking();
+        return;
+      }
+
+      // Start new audio
       const text = message.content[0].text;
-      const reader = await generateSpeech(text);
-      const audioUrl = URL.createObjectURL(reader);
+      const blob = await generateSpeech(text);
+      const audioUrl = URL.createObjectURL(blob);
 
       const audio = new Audio(audioUrl);
-      audio.play();
+
+      // Attach handlers BEFORE setting ref and playing
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        onToggleSpeaking();
+        audioRef.current = null;
+      };
+
+      audio.onerror = (e) => {
+        console.error("Audio error:", e); // Debug log
+        URL.revokeObjectURL(audioUrl);
+        onToggleSpeaking();
+        audioRef.current = null;
+      };
+
+      audioRef.current = audio;
+      onToggleSpeaking();
+
+      await audio.play();
     } catch (err) {
       console.error("TTS error:", err);
+      onToggleSpeaking();
+      if (audioRef.current) {
+        audioRef.current = null;
+      }
     }
   };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -118,6 +160,8 @@ export function ChatMessage(props: ChatMessageProps) {
               onThumbsDown={() => onThumbsDown(msgId)}
               onCommentClick={() => onCommentClick(msgId)}
               onPlayTTS={handlePlayTTS}
+              isSpeaking={isSpeaking}
+              onToggleSpeaking={onToggleSpeaking}
             />
 
             <AnimatePresence mode="popLayout">

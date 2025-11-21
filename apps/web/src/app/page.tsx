@@ -23,6 +23,9 @@ export default function ChatPage() {
   const { messages, loading, handleSend: chatHandleSend } = useChatMessages();
   const [input, setInput] = useState("");
   const [voiceToken, setVoiceToken] = useState("");
+  const [mute, setMute] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     fetchTokenFromServer().then(setVoiceToken);
@@ -105,6 +108,9 @@ export default function ChatPage() {
                   onSaveIdealAnswer={feedback.handleSaveIdealAnswer}
                   onIdeadAnswerCancel={feedback.handleCancelIdealAnswer}
                   onCommentCancel={feedback.handleCancelComment}
+                  isSpeaking={speaking}
+                  onToggleSpeaking={() => setSpeaking((prev) => !prev)}
+                  audioRef={audioRef}
                 />
               ))}
 
@@ -135,6 +141,8 @@ export default function ChatPage() {
             setInput={setInput}
             voiceMode={voiceMode}
             setVoiceMode={setVoiceMode}
+            mute={mute}
+            onToggleMute={() => setMute((prev) => !prev)}
           />
         </div>
       </AppShellMain>
