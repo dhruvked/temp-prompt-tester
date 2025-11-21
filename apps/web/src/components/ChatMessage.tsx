@@ -76,11 +76,6 @@ export function ChatMessage(props: ChatMessageProps) {
         audioRef.current.src = "";
         audioRef.current = null;
         if (oldSrc) URL.revokeObjectURL(oldSrc);
-      }
-
-      // If this message is already speaking, just stop
-      if (isSpeaking) {
-        onToggleSpeaking();
         return;
       }
 
@@ -99,7 +94,6 @@ export function ChatMessage(props: ChatMessageProps) {
       };
 
       audio.onerror = (e) => {
-        console.error("Audio error:", e); // Debug log
         URL.revokeObjectURL(audioUrl);
         onToggleSpeaking();
         audioRef.current = null;
@@ -117,6 +111,7 @@ export function ChatMessage(props: ChatMessageProps) {
       }
     }
   };
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
