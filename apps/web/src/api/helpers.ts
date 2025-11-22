@@ -57,7 +57,6 @@ const getResponse8 = async (
 
   while (true) {
     const { done, value } = await reader.read();
-    console.log(decoder.decode(value));
     if (done) break;
 
     const chunk = decoder.decode(value);
@@ -80,11 +79,14 @@ const getResponse8 = async (
 };
 
 const quickResponse = async (text: string) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quickResponse`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/quickResponse`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    }
+  );
 
   if (!response.ok) throw new Error("Failed to get quick response");
   return response.json();
@@ -98,16 +100,19 @@ const getResponse9 = async (
 ) => {
   const cleanedMessages = messages.map(({ id, ...rest }) => rest);
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/getResponse9`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      input: cleanedMessages,
-      id,
-      session_id,
-      accountId,
-    }),
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/getResponse9`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: cleanedMessages,
+        id,
+        session_id,
+        accountId,
+      }),
+    }
+  );
 
   if (!response.ok) throw new Error("Failed to get response");
   return response.json();

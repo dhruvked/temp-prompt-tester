@@ -18,7 +18,6 @@ export function useSpeech() {
 
   const speak = async (text: string, id: string) => {
     cancelSpeech();
-
     const blob = await generateSpeech(text);
     const url = URL.createObjectURL(blob);
 

@@ -78,12 +78,11 @@ export function useChatMessages(
               ],
             };
 
-            if (isVoiceModeRef.current) {
-              speak(finalText, messageId);
-            }
-
             return [...withoutFiller, finalMsg];
           });
+          if (isVoiceModeRef.current) {
+            speak(finalText, messageId);
+          }
         }
       );
     } catch (err) {

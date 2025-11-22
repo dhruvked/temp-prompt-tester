@@ -19,7 +19,6 @@ export function useVoiceMode(
     modelId: "scribe_v2_realtime",
     onCommittedTranscript: async (data) => {
       if (muteRef.current) return;
-
       if (data.text !== "") {
         onTranscript(data.text);
       }
