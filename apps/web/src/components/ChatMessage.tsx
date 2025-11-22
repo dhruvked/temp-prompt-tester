@@ -32,9 +32,9 @@ interface ChatMessageProps {
   onSaveIdealAnswer: (id: string) => void;
   onIdeadAnswerCancel: (id: string) => void;
   onCommentCancel: (id: string) => void;
-  isSpeaking: boolean;
+  currentSpeakingId: string | null;
   audioRef: React.RefObject<HTMLAudioElement | null>;
-  onSpeak: (text: string) => void;
+  onSpeak: (text: string, id: string) => void;
   onCancelSpeak: () => void;
 }
 
@@ -60,7 +60,7 @@ export function ChatMessage(props: ChatMessageProps) {
     onSaveIdealAnswer,
     onIdeadAnswerCancel,
     onCommentCancel,
-    isSpeaking,
+    currentSpeakingId,
     audioRef,
     onSpeak,
     onCancelSpeak,
@@ -117,7 +117,7 @@ export function ChatMessage(props: ChatMessageProps) {
     if (audioRef.current) {
       onCancelSpeak(); // stop current speech
     } else {
-      onSpeak(message.content[0].text); // speak message
+      onSpeak(message.content[0].text, msgId); // speak message
     }
   };
 
@@ -128,9 +128,7 @@ export function ChatMessage(props: ChatMessageProps) {
       transition={{ duration: 0.25 }}
       style={{
         width: "100%",
-        maxWidth: "700px",
         display: "flex",
-        margin: "0 auto",
         justifyContent:
           message.role === "developer" ? "flex-end" : "flex-start",
       }}
@@ -166,7 +164,7 @@ export function ChatMessage(props: ChatMessageProps) {
               onThumbsDown={() => onThumbsDown(msgId)}
               onCommentClick={() => onCommentClick(msgId)}
               onPlayTTS={handlePlayTTS}
-              isSpeaking={isSpeaking}
+              isSpeaking={currentSpeakingId === msgId}
             />
 
             <AnimatePresence mode="popLayout">

@@ -22,7 +22,8 @@ export default function ChatPage() {
   const session_idRef = useRef<string>(crypto.randomUUID());
   const isMobile = useMediaQuery("(max-width: 640px)");
   const viewport = useRef<HTMLDivElement>(null);
-  const { speak, cancelSpeech, isSpeaking, audioRef } = useSpeech();
+  const { speak, cancelSpeech, currentSpeakingId, audioRef } = useSpeech();
+
   const isVoiceModeRef = useRef(false);
 
   const handleVoiceTranscript = (text: string) => {
@@ -130,7 +131,7 @@ export default function ChatPage() {
                   onIdeadAnswerCancel={feedback.handleCancelIdealAnswer}
                   onCommentCancel={feedback.handleCancelComment}
                   audioRef={audioRef}
-                  isSpeaking={isSpeaking}
+                  currentSpeakingId={currentSpeakingId}
                   onSpeak={speak}
                   onCancelSpeak={cancelSpeech}
                 />

@@ -3,47 +3,37 @@ import { generateSpeech } from "@/api/helpers";
 
 export function useSpeech() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(
+    null
+  );
 
   const cancelSpeech = () => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
       audioRef.current = null;
-      setIsSpeaking(false);
+      setCurrentSpeakingId(null);
     }
   };
 
-  const speak = async (text: string) => {
-    try {
-      // stop previous audio
-      cancelSpeech();
+  const speak = async (text: string, id: string) => {
+    cancelSpeech();
 
-      const blob = await generateSpeech(text);
-      const url = URL.createObjectURL(blob);
+    const blob = await generateSpeech(text);
+    const url = URL.createObjectURL(blob);
 
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      setIsSpeaking(true);
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    setCurrentSpeakingId(id);
 
-      audio.onended = () => {
-        URL.revokeObjectURL(url);
-        audioRef.current = null;
-        setIsSpeaking(false);
-      };
+    audio.onended = () => {
+      URL.revokeObjectURL(url);
+      audioRef.current = null;
+      setCurrentSpeakingId(null);
+    };
 
-      audio.onerror = () => {
-        URL.revokeObjectURL(url);
-        audioRef.current = null;
-        setIsSpeaking(false);
-      };
-
-      await audio.play();
-    } catch (err) {
-      console.error("speech error", err);
-      cancelSpeech();
-    }
+    await audio.play();
   };
 
-  return { speak, cancelSpeech, isSpeaking, audioRef };
+  return { speak, cancelSpeech, currentSpeakingId, audioRef };
 }
