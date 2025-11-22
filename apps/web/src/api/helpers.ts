@@ -29,21 +29,26 @@ const getResponse8 = async (
   id: string,
   session_id: string,
   accountId: string,
+  messageId: string,
   onFiller: (text: string) => void,
-  onResponse: (text: string, tags: string[]) => void
+  onResponse: (text: string) => void
 ) => {
   const cleanedMessages = messages.map(({ id, ...rest }) => rest);
 
-  const response = await fetch(`http://localhost:3000/api/getResponse8`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      input: cleanedMessages,
-      id,
-      session_id,
-      accountId,
-    }),
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/getResponse8`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: cleanedMessages,
+        id,
+        session_id,
+        accountId,
+        messageId,
+      }),
+    }
+  );
   if (!response.ok) throw new Error("Failed to get response");
   if (!response.body) throw new Error("No response body");
 
@@ -65,7 +70,7 @@ const getResponse8 = async (
         if (data.type === "filler") {
           onFiller(data.text);
         } else if (data.type === "response") {
-          onResponse(data.text, data.tags);
+          onResponse(data.text);
         } else if (data.type === "done") {
           return;
         }
@@ -75,7 +80,7 @@ const getResponse8 = async (
 };
 
 const quickResponse = async (text: string) => {
-  const response = await fetch(`http://localhost:3000/api/quickResponse`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quickResponse`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),
@@ -93,7 +98,7 @@ const getResponse9 = async (
 ) => {
   const cleanedMessages = messages.map(({ id, ...rest }) => rest);
 
-  const response = await fetch(`http://localhost:3000/api/getResponse9`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/getResponse9`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

@@ -22,6 +22,9 @@ export function useChatMessages(
   const handleSend = async (input: string) => {
     if (!input.trim() || loading) return;
 
+    // ✅ Generate one UUID for this message cycle
+    const messageId = crypto.randomUUID();
+
     const userMessage: Message = {
       role: "developer",
       content: [{ type: "input_text", text: input }],
@@ -30,53 +33,64 @@ export function useChatMessages(
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
 
+    // temp filler storage
+    let fillerTextStore = "";
+
     try {
-      // Step 1: Get quick response (filler)
-      const quickResp = await quickResponse(input);
-      const fillerText = quickResp.text;
-
-      // Add filler message
-      const fillerMessage: Message = {
-        id: "filler-temp",
-        role: "assistant",
-        content: [{ type: "output_text", text: fillerText }],
-      };
-      setMessages((prev) => [...prev, fillerMessage]);
-
-      if (isVoiceModeRef.current) {
-        speak(fillerText, fillerMessage.id!);
-      }
-      // Step 2: Get main response
-      const response = await getResponse9(
+      await getResponse8(
         [...messages, userMessage],
-        "3e532144-2181-48eb-be56-66edc3bab9dd",
+        /* avatar id */ "3e532144-2181-48eb-be56-66edc3bab9dd",
         session_id,
-        "435f83e7-6361-4d99-8bdf-12ea1328f0c7"
+        /* account */ "435f83e7-6361-4d99-8bdf-12ea1328f0c7",
+        messageId, // ✅ send SAME messageId to backend
+
+        // --- FILLER CALLBACK ---
+        (fillerText) => {
+          fillerTextStore = fillerText;
+
+          const fillerMsg: Message = {
+            id: messageId, // ✅ SAME ID
+            role: "assistant",
+            content: [{ type: "output_text", text: fillerText }],
+          };
+
+          setMessages((prev) => [...prev, fillerMsg]);
+
+          if (isVoiceModeRef.current) {
+            speak(fillerText, messageId);
+          }
+        },
+
+        // --- FINAL RESPONSE CALLBACK ---
+        (finalText) => {
+          setMessages((prev) => {
+            // remove filler (same ID)
+            const withoutFiller = prev.filter((m) => m.id !== messageId);
+
+            const finalMsg: Message = {
+              id: messageId, // ✅ SAME ID persists
+              role: "assistant",
+              content: [
+                {
+                  type: "output_text",
+                  text: fillerTextStore + "..." + finalText,
+                },
+              ],
+            };
+
+            if (isVoiceModeRef.current) {
+              speak(finalText, messageId);
+            }
+
+            return [...withoutFiller, finalMsg];
+          });
+        }
       );
+    } catch (err) {
+      console.error("SSE error:", err);
 
-      // Replace filler with real response
-      setMessages((prev) => {
-        const withoutFiller = prev.filter((m) => m.id !== "filler-temp");
-        const assistantMessage: Message = {
-          id: response.messageId,
-          role: "assistant",
-          content: [
-            {
-              type: "output_text",
-              text: fillerMessage.content[0].text + "..." + response.text,
-            },
-          ],
-        };
-        return [...withoutFiller, assistantMessage];
-      });
-
-      if (isVoiceModeRef.current) {
-        speak(response.text, response.messageId!);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      // Remove filler on error
-      setMessages((prev) => prev.filter((m) => m.id !== "filler-temp"));
+      // cleanup filler on failure
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
     } finally {
       setLoading(false);
     }
