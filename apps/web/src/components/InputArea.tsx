@@ -94,7 +94,7 @@ export function InputArea({
               background: "transparent",
               border: "none",
               color: "rgba(255,255,255,0.9)",
-              fontSize: isMobile ? "14px" : "15px",
+              fontSize: "16px",
               padding: "8px 12px",
               transition: "all 0.2s ease",
             },

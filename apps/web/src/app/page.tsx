@@ -23,8 +23,9 @@ export default function ChatPage() {
   const isMobile = useMediaQuery("(max-width: 640px)");
   const viewport = useRef<HTMLDivElement>(null);
   const { speak, cancelSpeech, currentSpeakingId, audioRef } = useSpeech();
-
   const isVoiceModeRef = useRef(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const enableAudio = () => setAudioEnabled(true);
 
   const handleVoiceTranscript = (text: string) => {
     chatHandleSend(text);
@@ -85,6 +86,35 @@ export default function ChatPage() {
             height: "100%",
           }}
         >
+          {!audioEnabled && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: isMobile ? 70 : 90,
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                zIndex: 9999,
+              }}
+            >
+              <Paper
+                onClick={enableAudio}
+                p="sm"
+                radius="lg"
+                shadow="md"
+                style={{
+                  display: "inline-block",
+                  background: "rgba(255,255,255,0.1)",
+                  cursor: "pointer",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                <Text c="white" size={isMobile ? "xs" : "sm"}>
+                  Tap to enable voice
+                </Text>
+              </Paper>
+            </div>
+          )}
           <ScrollArea
             flex={1}
             viewportRef={viewport}

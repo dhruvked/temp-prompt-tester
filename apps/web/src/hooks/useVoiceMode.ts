@@ -18,6 +18,7 @@ export function useVoiceMode(
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
     onCommittedTranscript: async (data) => {
+      if (data.text.length < 3) return;
       if (muteRef.current) return;
       if (data.text !== "") {
         onTranscript(data.text);
@@ -35,6 +36,7 @@ export function useVoiceMode(
         // Activate
         const connection = await scribe.connect({
           token: voiceToken,
+          languageCode: "en",
           microphone: {
             echoCancellation: true,
             noiseSuppression: true,
@@ -42,7 +44,7 @@ export function useVoiceMode(
           commitStrategy: CommitStrategy.VAD,
           vadSilenceThresholdSecs: 1,
           minSilenceDurationMs: 100,
-          vadThreshold: 0.2,
+          vadThreshold: 0.4,
         });
         setVoiceMode(true);
       } else {
