@@ -25,7 +25,12 @@ export default function ChatPage() {
   const { speak, cancelSpeech, currentSpeakingId, audioRef } = useSpeech();
   const isVoiceModeRef = useRef(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
-  const enableAudio = () => setAudioEnabled(true);
+  const enableAudio = () => {
+    // unlock audio on iOS/Android
+    const a = new Audio();
+    a.play().catch(() => {});
+    setAudioEnabled(true);
+  };
 
   const handleVoiceTranscript = (text: string) => {
     chatHandleSend(text);
