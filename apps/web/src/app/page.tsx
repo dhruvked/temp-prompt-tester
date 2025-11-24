@@ -7,6 +7,7 @@ import {
   Paper,
   Text,
   Loader,
+  Center,
 } from "@mantine/core";
 import { useState, useRef, useEffect } from "react";
 import { useMediaQuery } from "@mantine/hooks";
@@ -172,7 +173,10 @@ export default function ChatPage() {
             px={isMobile ? "xs" : "md"}
             styles={{
               root: { border: "none", background: "transparent" },
-              viewport: { background: "transparent" },
+              viewport: {
+                background: "transparent",
+                paddingBottom: 250,
+              },
               scrollbar: { background: "transparent" },
               thumb: { background: "rgba(255,255,255,0.2)" },
             }}
@@ -186,7 +190,6 @@ export default function ChatPage() {
               gap={isMobile ? "xs" : "sm"}
               py="md"
               px={isMobile ? "xs" : "6px"}
-              style={{ paddingBottom: 250 }}
             >
               {messages.map((msg, index) => (
                 <ChatMessage
@@ -220,7 +223,9 @@ export default function ChatPage() {
               ))}
 
               {loading && (
-                <Loader type="dots" color="white" size="sm" ml="sm" />
+                <Center>
+                  <Loader type="dots" color="white" size="sm" ml="sm" />
+                </Center>
               )}
             </Stack>
           </ScrollArea>
