@@ -87,7 +87,6 @@ export function InputArea({
             onChange={(e) => onInputChange(e.target.value)}
             placeholder="Type a message..."
             autosize
-            miw={isMobile ? "250px" : "300px"}
             minRows={1}
             maxRows={4}
             onKeyDown={(e) => {

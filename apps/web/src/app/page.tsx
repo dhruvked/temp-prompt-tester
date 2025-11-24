@@ -81,6 +81,9 @@ export default function ChatPage() {
     await chatHandleSend(input_text);
   };
 
+  const showWelcome = messages.length === 0 && !loading;
+  const showAudioEnable = !audioEnabled && messages.length === 0 && !loading;
+
   return (
     <AppShell padding={isMobile ? "xs" : "sm"}>
       <AppShellMain style={{ height: "100vh" }}>
@@ -96,7 +99,7 @@ export default function ChatPage() {
           }}
         >
           <AnimatePresence>
-            {!audioEnabled && isMobile && (
+            {showAudioEnable && isMobile && (
               <motion.div
                 key="audio-enable"
                 initial={{ opacity: 0, y: 10 }}
@@ -104,10 +107,8 @@ export default function ChatPage() {
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.25 }}
                 style={{
-                  position: "absolute",
-                  bottom: 120,
-                  left: 0,
-                  right: 0,
+                  position: "relative",
+                  top: 20,
                   textAlign: "center",
                   zIndex: 9999,
                 }}
@@ -131,6 +132,40 @@ export default function ChatPage() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          <AnimatePresence>
+            {showWelcome && (
+              <motion.div
+                key="welcome"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.35 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                style={{
+                  position: "absolute",
+                  top: "35%",
+                  left: 0,
+                  right: 0,
+                  textAlign: "center",
+                  pointerEvents: "none", // ✅ does NOT block input
+                }}
+              >
+                <Text
+                  c="white"
+                  style={{
+                    fontSize: isMobile ? "18px" : "22px",
+                    fontWeight: 500,
+                    opacity: 0.6,
+                  }}
+                >
+                  Welcome!
+                  <br />
+                  Type a message or tap the mic to begin
+                </Text>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <ScrollArea
             flex={1}
             viewportRef={viewport}
