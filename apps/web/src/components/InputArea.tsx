@@ -61,7 +61,7 @@ export function InputArea({
         align="center"
         wrap="nowrap"
         style={{
-          maxWidth: isVoiceMode ? "fit-content" : isMobile ? "100%" : "700px",
+          maxWidth: isVoiceMode ? "fit-content" : isMobile ? "90%" : "700px",
           margin: "0 auto",
           padding: "8px",
           borderRadius: "24px",

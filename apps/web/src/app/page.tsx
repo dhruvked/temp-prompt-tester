@@ -151,7 +151,7 @@ export default function ChatPage() {
               gap={isMobile ? "xs" : "sm"}
               py="md"
               px={isMobile ? "xs" : "6px"}
-              style={{ paddingBottom: isMobile ? 90 : 110 }}
+              style={{ paddingBottom: 200 }}
             >
               {messages.map((msg, index) => (
                 <ChatMessage
@@ -185,17 +185,7 @@ export default function ChatPage() {
               ))}
 
               {loading && (
-                <Paper
-                  shadow="sm"
-                  radius="lg"
-                  style={{
-                    alignSelf: "center",
-                    background: "transparent",
-                  }}
-                  p="sm"
-                >
-                  <Loader type="dots" color="white" size="xs" />
-                </Paper>
+                <Loader type="dots" color="white" size="sm" ml="sm" />
               )}
             </Stack>
           </ScrollArea>
