@@ -84,7 +84,23 @@ export function useChatMessages(
     } catch (err) {
       console.error("SSE error:", err);
 
-      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      setMessages((prev) => {
+        // remove filler (same ID)
+        const withoutFiller = prev.filter((m) => m.id !== messageId);
+
+        const finalMsg: Message = {
+          id: messageId, // ✅ SAME ID persists
+          role: "assistant",
+          content: [
+            {
+              type: "output_text",
+              text: "Failed to get response, please try again",
+            },
+          ],
+        };
+
+        return [...withoutFiller, finalMsg];
+      });
     } finally {
       setLoading(false);
     }
