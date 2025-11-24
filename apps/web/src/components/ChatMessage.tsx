@@ -1,4 +1,4 @@
-import { Center, Paper, Text } from "@mantine/core";
+import { Center, Loader, Paper, Text } from "@mantine/core";
 import { CommentForm } from "./CommentForm";
 import { FeedbackForm } from "./FeedbackForm";
 import { MessageActions } from "./MessageActions";
@@ -36,6 +36,7 @@ interface ChatMessageProps {
   audioRef: React.RefObject<HTMLAudioElement | null>;
   onSpeak: (text: string, id: string) => void;
   onCancelSpeak: () => void;
+  loading: boolean;
 }
 
 export function ChatMessage(props: ChatMessageProps) {
@@ -64,6 +65,7 @@ export function ChatMessage(props: ChatMessageProps) {
     audioRef,
     onSpeak,
     onCancelSpeak,
+    loading,
   } = props;
 
   const msgId = message.id ?? `msg-${Math.random()}`;
@@ -128,7 +130,9 @@ export function ChatMessage(props: ChatMessageProps) {
       transition={{ duration: 0.25 }}
       style={{
         width: "100%",
+        maxWidth: "900px",
         display: "flex",
+        margin: "0 auto",
         justifyContent:
           message.role === "developer" ? "flex-end" : "flex-start",
       }}

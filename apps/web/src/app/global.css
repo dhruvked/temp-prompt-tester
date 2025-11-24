@@ -1,7 +1,4 @@
 /* globals.css */
-* {
-  will-change: transform;
-}
 html,
 body {
   margin: 0;
@@ -107,5 +104,3 @@ body {
     opacity: 0.8;
   }
 }
-
-

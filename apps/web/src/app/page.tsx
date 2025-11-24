@@ -6,6 +6,7 @@ import {
   Stack,
   Paper,
   Text,
+  Loader,
 } from "@mantine/core";
 import { useState, useRef, useEffect } from "react";
 import { useMediaQuery } from "@mantine/hooks";
@@ -17,6 +18,7 @@ import { useRecording } from "@/hooks/useRecording";
 import { fetchTokenFromServer } from "@/api/helpers";
 import { useVoiceMode } from "@/hooks/useVoiceMode";
 import { useSpeech } from "@/hooks/useSpeech";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function ChatPage() {
   const session_idRef = useRef<string>(crypto.randomUUID());
@@ -84,42 +86,51 @@ export default function ChatPage() {
       <AppShellMain style={{ height: "100vh" }}>
         <div
           style={{
+            position: "relative",
             display: "flex",
             flexDirection: "column",
             flex: 1,
             minWidth: 0,
+            minHeight: 0,
             height: "100%",
           }}
         >
-          {!audioEnabled && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: isMobile ? 70 : 90,
-                left: 0,
-                right: 0,
-                textAlign: "center",
-                zIndex: 9999,
-              }}
-            >
-              <Paper
-                onClick={enableAudio}
-                p="sm"
-                radius="lg"
-                shadow="md"
+          <AnimatePresence>
+            {!audioEnabled && isMobile && (
+              <motion.div
+                key="audio-enable"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.25 }}
                 style={{
-                  display: "inline-block",
-                  background: "rgba(255,255,255,0.1)",
-                  cursor: "pointer",
-                  backdropFilter: "blur(10px)",
+                  position: "absolute",
+                  bottom: 90,
+                  left: 0,
+                  right: 0,
+                  textAlign: "center",
+                  zIndex: 9999,
                 }}
               >
-                <Text c="white" size={isMobile ? "xs" : "sm"}>
-                  Tap to enable voice
-                </Text>
-              </Paper>
-            </div>
-          )}
+                <Paper
+                  onClick={enableAudio}
+                  p="xs"
+                  radius="lg"
+                  shadow="md"
+                  style={{
+                    display: "inline-block",
+                    background: "rgba(255,255,255,0.1)",
+                    cursor: "pointer",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  <Text c="white" size={isMobile ? "xs" : "sm"}>
+                    Tap to enable voice
+                  </Text>
+                </Paper>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <ScrollArea
             flex={1}
             viewportRef={viewport}
@@ -132,15 +143,15 @@ export default function ChatPage() {
             }}
             style={{
               background: "transparent",
-              paddingTop: "8px",
-              paddingBottom: "8px",
-              marginBottom: isMobile ? "4px" : "6px",
+              minHeight: 0,
+              // marginBottom: isMobile ? "4px" : "6px",
             }}
           >
             <Stack
               gap={isMobile ? "xs" : "sm"}
               py="md"
               px={isMobile ? "xs" : "6px"}
+              style={{ paddingBottom: isMobile ? 90 : 110 }}
             >
               {messages.map((msg, index) => (
                 <ChatMessage
@@ -169,20 +180,21 @@ export default function ChatPage() {
                   currentSpeakingId={currentSpeakingId}
                   onSpeak={speak}
                   onCancelSpeak={cancelSpeech}
+                  loading={loading}
                 />
               ))}
 
               {loading && (
                 <Paper
-                  p={isMobile ? "sm" : "md"}
-                  radius={isMobile ? "md" : "lg"}
-                  bg="rgba(30,30,34,0.6)"
                   shadow="sm"
-                  style={{ alignSelf: "flex-start", maxWidth: "60%" }}
+                  radius="lg"
+                  style={{
+                    alignSelf: "center",
+                    background: "transparent",
+                  }}
+                  p="sm"
                 >
-                  <Text c="white" size={isMobile ? "xs" : "sm"}>
-                    ...
-                  </Text>
+                  <Loader type="dots" color="white" size="xs" />
                 </Paper>
               )}
             </Stack>

@@ -22,7 +22,6 @@ export function useChatMessages(
   const handleSend = async (input: string) => {
     if (!input.trim() || loading) return;
 
-    // ✅ Generate one UUID for this message cycle
     const messageId = crypto.randomUUID();
 
     const userMessage: Message = {
@@ -33,18 +32,16 @@ export function useChatMessages(
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
 
-    // temp filler storage
     let fillerTextStore = "";
 
     try {
       await getResponse8(
         [...messages, userMessage],
-        /* avatar id */ "3e532144-2181-48eb-be56-66edc3bab9dd",
+        "3e532144-2181-48eb-be56-66edc3bab9dd",
         session_id,
-        /* account */ "435f83e7-6361-4d99-8bdf-12ea1328f0c7",
-        messageId, // ✅ send SAME messageId to backend
+        "435f83e7-6361-4d99-8bdf-12ea1328f0c7",
+        messageId,
 
-        // --- FILLER CALLBACK ---
         (fillerText) => {
           fillerTextStore = fillerText;
 
@@ -61,7 +58,6 @@ export function useChatMessages(
           }
         },
 
-        // --- FINAL RESPONSE CALLBACK ---
         (finalText) => {
           setMessages((prev) => {
             // remove filler (same ID)
@@ -88,7 +84,6 @@ export function useChatMessages(
     } catch (err) {
       console.error("SSE error:", err);
 
-      // cleanup filler on failure
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
     } finally {
       setLoading(false);
