@@ -105,7 +105,7 @@ export default function ChatPage() {
                 transition={{ duration: 0.25 }}
                 style={{
                   position: "absolute",
-                  bottom: 90,
+                  bottom: 120,
                   left: 0,
                   right: 0,
                   textAlign: "center",

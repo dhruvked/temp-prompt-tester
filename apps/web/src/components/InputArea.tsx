@@ -50,10 +50,10 @@ export function InputArea({
     <div
       style={{
         position: "absolute",
-        bottom: 0,
+        bottom: 40,
         left: 0,
         right: 0,
-        background: "transparent", // optional blur look
+        background: "transparent",
       }}
     >
       <Group
@@ -61,20 +61,21 @@ export function InputArea({
         align="center"
         wrap="nowrap"
         style={{
-          maxWidth: isMobile ? "100%" : "700px",
+          maxWidth: isVoiceMode ? "fit-content" : isMobile ? "100%" : "700px",
           margin: "0 auto",
-          padding: isMobile ? "8px" : "10px 12px",
+          padding: "8px",
           borderRadius: "24px",
           border: "1px solid rgba(255,255,255,0.08)",
           backdropFilter: "blur(16px)",
           background: "rgba(20,20,24,0.6)",
           boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          transform: isVoiceMode ? "scale(0.92)" : "scale(1)",
+          transition: "all 0.25s ease",
         }}
       >
         <div
           style={{
-            flex: 1,
+            flex: isVoiceMode ? 0 : 1,
             transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             opacity: isVoiceMode ? 0 : 1,
             transform: isVoiceMode ? "scale(0.95)" : "scale(1)",
