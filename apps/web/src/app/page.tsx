@@ -186,7 +186,7 @@ export default function ChatPage() {
               gap={isMobile ? "xs" : "sm"}
               py="md"
               px={isMobile ? "xs" : "6px"}
-              style={{ paddingBottom: 200 }}
+              style={{ paddingBottom: 250 }}
             >
               {messages.map((msg, index) => (
                 <ChatMessage
