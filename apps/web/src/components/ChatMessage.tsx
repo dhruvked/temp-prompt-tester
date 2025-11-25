@@ -127,7 +127,7 @@ export function ChatMessage(props: ChatMessageProps) {
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
+      transition={{ duration: 0.4 }}
       style={{
         width: "100%",
         maxWidth: "900px",
@@ -141,10 +141,9 @@ export function ChatMessage(props: ChatMessageProps) {
         p={isMobile ? "sm" : "md"}
         radius={isMobile ? "md" : "lg"}
         shadow="sm"
-        bg="rgba(255,255,255,0.05)"
+        bg={isAssistant ? "transparent" : "rgba(255,255,255,0.05)"}
         style={{
           maxWidth: isMobile ? "90%" : "78%",
-          border: isAssistant ? "1px solid rgba(255,255,255,0.08)" : "none",
           backdropFilter: isAssistant ? "blur(10px)" : "none",
         }}
       >

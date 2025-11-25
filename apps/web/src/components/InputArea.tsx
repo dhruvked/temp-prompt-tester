@@ -78,7 +78,6 @@ export function InputArea({
             flex: isVoiceMode ? 0 : 1,
             transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             opacity: isVoiceMode ? 0 : 1,
-            transform: isVoiceMode ? "scale(0.95)" : "scale(1)",
             display: isVoiceMode ? "none" : "block",
           }}
         >
@@ -102,7 +101,6 @@ export function InputArea({
               input: {
                 background: "transparent",
                 border: "none",
-                color: "rgba(255,255,255,0.9)",
                 fontSize: "16px",
                 padding: "8px 12px",
                 transition: "all 0.2s ease",

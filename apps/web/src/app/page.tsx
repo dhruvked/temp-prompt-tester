@@ -28,11 +28,28 @@ export default function ChatPage() {
   const { speak, cancelSpeech, currentSpeakingId, audioRef } = useSpeech();
   const isVoiceModeRef = useRef(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
-  const enableAudio = () => {
-    // unlock audio on iOS/Android
-    const a = new Audio();
-    a.play().catch(() => {});
-    setAudioEnabled(true);
+  const enableAudio = async () => {
+    try {
+      // Create and play a silent audio context
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      if (audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
+
+      // Play a brief silent sound to unlock
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      gain.gain.setValueAtTime(0, audioContext.currentTime); // silent
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+
+      setAudioEnabled(true);
+    } catch (err) {
+      console.error("Audio unlock failed:", err);
+    }
   };
 
   const handleVoiceTranscript = (text: string) => {
@@ -106,9 +123,9 @@ export default function ChatPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.4 }}
                 style={{
-                  position: "relative",
+                  position: "fixed",
                   top: 20,
                   textAlign: "center",
                   zIndex: 9999,
@@ -120,7 +137,6 @@ export default function ChatPage() {
                   radius="lg"
                   shadow="md"
                   style={{
-                    display: "inline-block",
                     background: "rgba(255,255,255,0.1)",
                     cursor: "pointer",
                     backdropFilter: "blur(10px)",
@@ -139,30 +155,19 @@ export default function ChatPage() {
               <motion.div
                 key="welcome"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 0.35 }}
+                animate={{ opacity: 0.2 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                transition={{ duration: 0.7 }}
                 style={{
                   position: "absolute",
                   top: "35%",
                   left: 0,
                   right: 0,
                   textAlign: "center",
-                  pointerEvents: "none", // ✅ does NOT block input
+                  pointerEvents: "none",
                 }}
               >
-                <Text
-                  c="white"
-                  style={{
-                    fontSize: isMobile ? "18px" : "22px",
-                    fontWeight: 500,
-                    opacity: 0.6,
-                  }}
-                >
-                  Welcome!
-                  <br />
-                  Type a message or tap the mic to begin
-                </Text>
+                <Text>Type a message or tap the mic to begin</Text>
               </motion.div>
             )}
           </AnimatePresence>
