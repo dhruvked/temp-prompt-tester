@@ -56,6 +56,8 @@ export default function ChatPage() {
     chatHandleSend(text);
   };
 
+  const showUserMessage = (text: string) => {};
+
   const [input, setInput] = useState("");
   const [voiceToken, setVoiceToken] = useState("");
   const { isVoiceMode, handleVoiceModeToggle, mute, toggleMute } = useVoiceMode(
