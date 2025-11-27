@@ -1,0 +1,197 @@
+import {
+  Stack,
+  Group,
+  TextInput,
+  ActionIcon,
+  Textarea,
+  Button,
+} from "@mantine/core";
+import {
+  IconCross,
+  IconMicrophone,
+  IconSend,
+  IconSquare,
+  IconVolume,
+  IconVolumeOff,
+  IconWaveSine,
+  IconX,
+} from "@tabler/icons-react";
+
+interface InputAreaProps {
+  isMobile: boolean;
+  input: string;
+  isRecording: boolean;
+  loading: boolean;
+  onInputChange: (value: string) => void;
+  onSend: () => void;
+  onRecordToggle: () => void;
+  setInput: (input: string) => void;
+  mute: boolean;
+  onToggleMute: () => void;
+  isVoiceMode: boolean;
+  onVoiceModeToggle: () => void;
+}
+
+export function InputArea({
+  isMobile,
+  input,
+  isRecording,
+  loading,
+  onInputChange,
+  onSend,
+  onRecordToggle,
+  setInput,
+  mute,
+  onToggleMute,
+  isVoiceMode,
+  onVoiceModeToggle,
+}: InputAreaProps) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: 40,
+        left: 0,
+        right: 0,
+        background: "transparent",
+      }}
+    >
+      <Group
+        gap="xs"
+        align="center"
+        wrap="nowrap"
+        style={{
+          maxWidth: isVoiceMode ? "fit-content" : isMobile ? "90%" : "700px",
+          margin: "0 auto",
+          padding: "8px",
+          borderRadius: "24px",
+          border: "1px solid rgba(255,255,255,0.08)",
+          backdropFilter: "blur(16px)",
+          background: "rgba(20,20,24,0.6)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
+          transform: isVoiceMode ? "scale(0.92)" : "scale(1)",
+          transition: "all 0.25s ease",
+        }}
+      >
+        <div
+          style={{
+            flex: isVoiceMode ? 0 : 1,
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            opacity: isVoiceMode ? 0 : 1,
+            display: isVoiceMode ? "none" : "block",
+          }}
+        >
+          <Textarea
+            value={input}
+            onChange={(e) => onInputChange(e.target.value)}
+            placeholder="Type a message..."
+            autosize
+            minRows={1}
+            maxRows={4}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onSend();
+                setInput("");
+              }
+            }}
+            radius="lg"
+            size={isMobile ? "sm" : "md"}
+            styles={{
+              input: {
+                background: "transparent",
+                border: "none",
+                fontSize: "16px",
+                padding: "8px 12px",
+                transition: "all 0.2s ease",
+              },
+            }}
+          />
+        </div>
+
+        {isVoiceMode && (
+          <ActionIcon
+            size={isMobile ? 36 : 40}
+            radius="xl"
+            variant="subtle"
+            color="gray"
+            onClick={onToggleMute}
+            title={mute ? "Unmute" : "Mute"}
+            style={{
+              transition: "all 0.2s ease",
+              animation: "fadeIn 0.3s ease",
+            }}
+          >
+            {mute ? (
+              <IconVolumeOff size={isMobile ? 18 : 20} />
+            ) : (
+              <IconVolume size={isMobile ? 18 : 20} />
+            )}
+          </ActionIcon>
+        )}
+
+        {!isVoiceMode && (
+          <ActionIcon
+            size={isMobile ? 36 : 40}
+            radius="xl"
+            variant="subtle"
+            color={isRecording ? "red" : "gray"}
+            onClick={onRecordToggle}
+            title={isRecording ? "Stop recording" : "Start recording"}
+            style={{
+              animation: isRecording
+                ? "pulseRecord 1.2s infinite"
+                : "fadeIn 0.3s ease",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {isRecording ? (
+              <IconSquare size={isMobile ? 16 : 18} />
+            ) : (
+              <IconMicrophone size={isMobile ? 18 : 20} />
+            )}
+          </ActionIcon>
+        )}
+
+        {input ? (
+          <ActionIcon
+            size={isMobile ? 36 : 40}
+            radius="xl"
+            variant="filled"
+            color="black"
+            onClick={onSend}
+            disabled={loading}
+            title="Send message"
+            style={{
+              transition: "all 0.2s ease",
+              transform: loading ? "scale(0.9)" : "scale(1)",
+              animation: "fadeIn 0.3s ease",
+            }}
+          >
+            <IconSend size={isMobile ? 18 : 20} />
+          </ActionIcon>
+        ) : (
+          <ActionIcon
+            size={isMobile ? 36 : 40}
+            radius="xl"
+            variant="subtle"
+            color="gray"
+            onClick={onVoiceModeToggle}
+            disabled={loading}
+            title="Voice Mode"
+            style={{
+              transition: "all 0.2s ease",
+              animation: "fadeIn 0.3s ease",
+            }}
+          >
+            {isVoiceMode ? (
+              <IconX size={isMobile ? 18 : 20} />
+            ) : (
+              <IconWaveSine size={isMobile ? 18 : 20} />
+            )}
+          </ActionIcon>
+        )}
+      </Group>
+    </div>
+  );
+}
