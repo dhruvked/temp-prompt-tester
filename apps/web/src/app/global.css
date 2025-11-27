@@ -6,6 +6,8 @@ body {
   background: #0a0a0a;
   overscroll-behavior: none;
   font-family: "Inter", sans-serif !important;
+  background: radial-gradient(circle at top, #111 0%, #000 100%);
+  color: white;
 }
 html {
   scroll-behavior: smooth;

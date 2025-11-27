@@ -24,6 +24,12 @@ export function useVoiceMode(
         onTranscript(data.text);
       }
     },
+    onPartialTranscript: async (data) => {
+      if (muteRef.current) return;
+      if(data.text!==""){
+        
+      }
+    },
   });
 
   const handleVoiceModeToggle = async () => {

@@ -24,7 +24,6 @@ export function useSpeech() {
     const audio = new Audio(url);
     audioRef.current = audio;
     setCurrentSpeakingId(id);
-
     audio.onended = () => {
       URL.revokeObjectURL(url);
       audioRef.current = null;

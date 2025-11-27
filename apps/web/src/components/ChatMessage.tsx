@@ -141,7 +141,7 @@ export function ChatMessage(props: ChatMessageProps) {
         p={isMobile ? "sm" : "md"}
         radius={isMobile ? "md" : "lg"}
         shadow="sm"
-        bg={isAssistant ? "transparent" : "rgba(255,255,255,0.05)"}
+        bg={isAssistant ? "rgba(0,0,0)" : "rgba(255,255,255,0.05)"}
         style={{
           maxWidth: isMobile ? "90%" : "78%",
           backdropFilter: isAssistant ? "blur(10px)" : "none",
