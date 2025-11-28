@@ -26,13 +26,31 @@ export function useVoiceMode(
     },
     onPartialTranscript: async (data) => {
       if (muteRef.current) return;
-      if(data.text!==""){
-        
+      if (data.text !== "") {
       }
     },
   });
 
   const handleVoiceModeToggle = async () => {
+    try {
+      // Create and play a silent audio context
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      if (audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
+
+      // Play a brief silent sound to unlock
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      gain.gain.setValueAtTime(0, audioContext.currentTime); // silent
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (err) {
+      console.error("Audio unlock failed:", err);
+    }
     // Prevent double taps / double toggles
     if (connectingRef.current) return;
     connectingRef.current = true;

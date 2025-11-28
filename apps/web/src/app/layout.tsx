@@ -50,7 +50,11 @@ export default function RootLayout({
         />
       </head>
 
-      <body>
+      <body
+        style={{
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
         <MantineProvider defaultColorScheme="dark">{children}</MantineProvider>
       </body>
     </html>

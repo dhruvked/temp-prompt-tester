@@ -1,29 +1,3 @@
-const getResponse = async (
-  messages: any[],
-  id: string,
-  session_id: string,
-  accountId: string
-) => {
-  const cleanedMessages = messages.map(({ id, ...rest }) => rest);
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/getResponse7`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        input: cleanedMessages,
-        id,
-        session_id,
-        accountId,
-      }),
-    }
-  );
-
-  if (!response.ok) throw new Error("Failed to get response");
-  return response.json();
-};
-
 const getResponse8 = async (
   messages: any[],
   id: string,
@@ -31,7 +5,8 @@ const getResponse8 = async (
   accountId: string,
   messageId: string,
   onFiller: (text: string) => void,
-  onResponse: (text: string) => void
+  onResponse: (text: string) => void,
+  onDone: (fullText: string) => void
 ) => {
   const cleanedMessages = messages.map(({ id, ...rest }) => rest);
 
@@ -49,11 +24,13 @@ const getResponse8 = async (
       }),
     }
   );
+
   if (!response.ok) throw new Error("Failed to get response");
   if (!response.body) throw new Error("No response body");
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
+  let fullText = "";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -68,54 +45,17 @@ const getResponse8 = async (
 
         if (data.type === "filler") {
           onFiller(data.text);
+          fullText += data.text;
         } else if (data.type === "response") {
           onResponse(data.text);
+          fullText += data.text;
         } else if (data.type === "done") {
+          onDone(fullText);
           return;
         }
       }
     }
   }
-};
-
-const quickResponse = async (text: string) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/quickResponse`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    }
-  );
-
-  if (!response.ok) throw new Error("Failed to get quick response");
-  return response.json();
-};
-
-const getResponse9 = async (
-  messages: any[],
-  id: string,
-  session_id: string,
-  accountId: string
-) => {
-  const cleanedMessages = messages.map(({ id, ...rest }) => rest);
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/getResponse9`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        input: cleanedMessages,
-        id,
-        session_id,
-        accountId,
-      }),
-    }
-  );
-
-  if (!response.ok) throw new Error("Failed to get response");
-  return response.json();
 };
 
 const storeFeedback = async (
@@ -189,12 +129,4 @@ async function fetchTokenFromServer() {
   const data = await res.json();
   return data.token;
 }
-export {
-  getResponse,
-  storeFeedback,
-  transcribe,
-  getResponse8,
-  fetchTokenFromServer,
-  quickResponse,
-  getResponse9,
-};
+export { storeFeedback, transcribe, getResponse8, fetchTokenFromServer };

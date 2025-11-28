@@ -140,8 +140,8 @@ export function ChatMessage(props: ChatMessageProps) {
       <Paper
         p={isMobile ? "sm" : "md"}
         radius={isMobile ? "md" : "lg"}
-        shadow="sm"
-        bg={isAssistant ? "rgba(0,0,0)" : "rgba(255,255,255,0.05)"}
+        shadow={isAssistant ? "sm" : "none"}
+        bg={isAssistant ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.5)"}
         style={{
           maxWidth: isMobile ? "90%" : "78%",
           backdropFilter: isAssistant ? "blur(10px)" : "none",

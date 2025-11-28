@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  getResponse,
-  getResponse8,
-  quickResponse,
-  getResponse9,
-} from "@/api/helpers";
+import { getResponse8 } from "@/api/helpers";
 type Message = {
   id?: string;
   role: "developer" | "assistant";
@@ -19,6 +14,46 @@ export function useChatMessages(
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const smoothAppend = (
+    messageId: string,
+    newChunk: string,
+    speed = 1 // characters per frame
+  ) => {
+    let index = 0;
+
+    const step = () => {
+      const slice = newChunk.slice(index, index + speed);
+      index += speed;
+
+      setMessages((prev) => {
+        const idx = prev.findIndex((m) => m.id === messageId);
+
+        if (idx === -1) return prev;
+
+        const updated = [...prev];
+        const oldText = updated[idx].content[0].text;
+
+        updated[idx] = {
+          ...updated[idx],
+          content: [
+            {
+              type: "output_text",
+              text: oldText + slice,
+            },
+          ],
+        };
+
+        return updated;
+      });
+
+      if (index < newChunk.length) {
+        requestAnimationFrame(step);
+      }
+    };
+
+    requestAnimationFrame(step);
+  };
+
   const handleSend = async (input: string) => {
     if (!input.trim() || loading) return;
 
@@ -32,7 +67,7 @@ export function useChatMessages(
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
 
-    let fillerTextStore = "";
+    let accumulatedText = "";
 
     try {
       await getResponse8(
@@ -43,63 +78,56 @@ export function useChatMessages(
         messageId,
 
         (fillerText) => {
-          fillerTextStore = fillerText;
-
-          const fillerMsg: Message = {
-            id: messageId, // ✅ SAME ID
-            role: "assistant",
-            content: [{ type: "output_text", text: fillerText }],
-          };
-
-          setMessages((prev) => [...prev, fillerMsg]);
-
-          if (isVoiceModeRef.current) {
-            speak(fillerText, messageId);
+          if (!accumulatedText && fillerText) {
+            // first chunk, create the message
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: messageId,
+                role: "assistant",
+                content: [{ type: "output_text", text: "" }],
+              },
+            ]);
           }
+
+          accumulatedText += fillerText;
+
+          smoothAppend(messageId, fillerText);
+
+          if (isVoiceModeRef.current) speak(fillerText, messageId);
         },
 
-        (finalText) => {
-          setMessages((prev) => {
-            // remove filler (same ID)
-            const withoutFiller = prev.filter((m) => m.id !== messageId);
+        (responseText) => {
+          accumulatedText += responseText;
 
-            const finalMsg: Message = {
-              id: messageId, // ✅ SAME ID persists
-              role: "assistant",
-              content: [
-                {
-                  type: "output_text",
-                  text: fillerTextStore + "..." + finalText,
-                },
-              ],
-            };
+          smoothAppend(messageId, responseText);
 
-            return [...withoutFiller, finalMsg];
-          });
-          if (isVoiceModeRef.current) {
-            speak(finalText, messageId);
-          }
+          if (isVoiceModeRef.current) speak(responseText, messageId);
+        },
+
+        (fullText) => {
+          // Final callback when done
+          console.log("Response complete:", fullText);
         }
       );
     } catch (err) {
       console.error("SSE error:", err);
-
       setMessages((prev) => {
-        // remove filler (same ID)
-        const withoutFiller = prev.filter((m) => m.id !== messageId);
-
-        const finalMsg: Message = {
-          id: messageId, // ✅ SAME ID persists
-          role: "assistant",
-          content: [
-            {
-              type: "output_text",
-              text: "Failed to get response, please try again",
-            },
-          ],
-        };
-
-        return [...withoutFiller, finalMsg];
+        const idx = prev.findIndex((m) => m.id === messageId);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = {
+            ...updated[idx],
+            content: [
+              {
+                type: "output_text",
+                text: "Failed to get response, please try again",
+              },
+            ],
+          };
+          return updated;
+        }
+        return prev;
       });
     } finally {
       setLoading(false);
