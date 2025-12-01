@@ -1,4 +1,4 @@
-import { ActionIcon, Group } from "@mantine/core";
+import { ActionIcon, Group, Loader } from "@mantine/core";
 import {
   IconCheck,
   IconCopy,
@@ -8,6 +8,7 @@ import {
   IconVolume,
   IconPlayerStop,
 } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
 interface MessageActionsProps {
   msgId: string;
@@ -36,6 +37,11 @@ export function MessageActions({
 }: MessageActionsProps) {
   const iconSize = isMobile ? 14 : 16;
   const btnSize = isMobile ? "xs" : "sm";
+  const [isPreparing, setIsPreparing] = useState(false);
+
+  useEffect(() => {
+    setIsPreparing(false);
+  }, [isSpeaking]);
 
   return (
     <Group
@@ -100,16 +106,21 @@ export function MessageActions({
           variant="subtle"
           color={isSpeaking ? "red" : "gray.5"}
           radius="md"
-          onClick={onPlayTTS}
+          onClick={() => {
+            setIsPreparing(true);
+            onPlayTTS?.();
+          }}
           title={isSpeaking ? "Stop audio" : "Play audio"}
           style={{
             animation: isSpeaking ? "pulse 1.5s ease-in-out infinite" : "none",
           }}
         >
-          {isSpeaking ? (
-            <IconPlayerStop size={isMobile ? 14 : 16} />
+          {isPreparing && !isSpeaking ? (
+            <Loader size="xs" color="white" />
+          ) : isSpeaking ? (
+            <IconPlayerStop size={iconSize} />
           ) : (
-            <IconVolume size={isMobile ? 14 : 16} />
+            <IconVolume size={iconSize} />
           )}
         </ActionIcon>
       </Group>

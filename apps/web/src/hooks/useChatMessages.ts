@@ -14,11 +14,7 @@ export function useChatMessages(
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const smoothAppend = (
-    messageId: string,
-    newChunk: string,
-    speed = 1 // characters per frame
-  ) => {
+  const smoothAppend = (messageId: string, newChunk: string, speed = 2) => {
     let index = 0;
 
     const step = () => {
