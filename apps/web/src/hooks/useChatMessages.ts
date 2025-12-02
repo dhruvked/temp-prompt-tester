@@ -75,7 +75,6 @@ export function useChatMessages(
 
         (fillerText) => {
           if (!accumulatedText && fillerText) {
-            // first chunk, create the message
             setMessages((prev) => [
               ...prev,
               {
