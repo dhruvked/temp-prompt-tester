@@ -355,7 +355,7 @@ const VideoOutput = ({
           </>
         )}
 
-        {status === "active" && !isMinimized && (
+        {/* {status === "active" && !isMinimized && (
           <ActionIcon
             onClick={startRecording}
             variant="transparent"
@@ -372,9 +372,9 @@ const VideoOutput = ({
           >
             <IconMicrophone size={24} />
           </ActionIcon>
-        )}
+        )} */}
 
-        {status === "listening to voice" && (
+        {/* {status === "listening to voice" && (
           <ActionIcon
             onClick={stopRecording}
             variant="transparent"
@@ -391,7 +391,7 @@ const VideoOutput = ({
           >
             <IconMicrophoneOff size={24} />
           </ActionIcon>
-        )}
+        )} */}
 
         {status === "speaking" && (
           <ActionIcon

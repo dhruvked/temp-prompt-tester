@@ -14,11 +14,12 @@ async function initializeAvatarSession(
   messageRef: React.RefObject<number>,
   speakQueue: React.RefObject<string[]>,
   mediaIndex: React.RefObject<number>,
-  mediaUrl: any
+  mediaUrl: any,
+  heygenName?: string
 ) {
   let flag = true;
   let currentSessionId = 0;
-
+  console.log(heygenName);
   const token = await fetchAccessToken();
   const avatar: StreamingAvatar = new StreamingAvatar({ token });
   avatar.on(StreamingEvents.STREAM_READY, (event) => {
@@ -27,7 +28,6 @@ async function initializeAvatarSession(
   });
 
   avatar.on(StreamingEvents.AVATAR_START_TALKING, (event) => {
-    console.log(flag);
     if (flag === false) {
       speakQueue.current.shift();
     }
@@ -98,7 +98,7 @@ async function initializeAvatarSession(
 
   const sessionData: any = await avatar.createStartAvatar({
     quality: AvatarQuality.Low,
-    avatarName: "Wayne_20240711",
+    avatarName: heygenName || "June_HR_public",
   });
 
   return avatar;

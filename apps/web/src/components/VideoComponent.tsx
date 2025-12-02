@@ -7,6 +7,7 @@ import VoiceInput from "./VoiceInput";
 import TextInput from "./TextInput";
 import VideoOutput from "./VideoOutput";
 import MediaFormatSelect from "./TestSelector";
+import { fetchAvatarByFrontendName } from "@/api/avatar";
 
 type VideoComponentProps = {
   name?: string;
@@ -22,6 +23,8 @@ export default function VideoComponenet({ name }: VideoComponentProps) {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const abortRef = React.useRef<AbortController>(new AbortController());
   const mediaUrl = React.useRef<any[]>([]);
+  const [heygenName, setHeygenName] = React.useState<string | undefined>();
+  const [avatarTable, setAvatarTable] = React.useState<any>();
 
   const initAvatar = async () => {
     console.log("name", name);
@@ -34,7 +37,8 @@ export default function VideoComponenet({ name }: VideoComponentProps) {
         messageRef,
         speakQueue,
         mediaIndex,
-        mediaUrl
+        mediaUrl,
+        avatarTable.heygenName
       )
     );
   };
@@ -51,6 +55,25 @@ export default function VideoComponenet({ name }: VideoComponentProps) {
     mediaIndex.current = -1;
     mediaUrl.current = [];
   };
+
+  React.useEffect(() => {
+    if (!name) {
+      setHeygenName(undefined);
+      return;
+    }
+
+    fetchAvatarByFrontendName(name)
+      .then((data) => {
+        setAvatarTable(data);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch avatar by frontendName:", err);
+        setHeygenName(undefined);
+      });
+
+    return;
+  }, [name]);
+
   return (
     <Stack align="center" mt="lg" h="100vh">
       <Badge variant="transparent" color="gray" size="xl">

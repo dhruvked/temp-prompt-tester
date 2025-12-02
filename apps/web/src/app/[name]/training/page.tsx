@@ -9,7 +9,7 @@ import {
   Loader,
   Center,
 } from "@mantine/core";
-import { useState, useRef, useEffect } from "react";
+import { use, useState, useRef, useEffect } from "react";
 import { useMediaQuery } from "@mantine/hooks";
 import { ChatMessage } from "@/components/ChatMessage";
 import { InputArea } from "@/components/InputArea";
@@ -21,7 +21,12 @@ import { useVoiceMode } from "@/hooks/useVoiceMode";
 import { useSpeech } from "@/hooks/useSpeech";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function ChatPage() {
+type PageProps = {
+  params: Promise<{ name: string }>;
+};
+
+export default function ChatPage({ params }: PageProps) {
+  const { name } = use(params);
   const session_idRef = useRef<string>(crypto.randomUUID());
   const isMobile = useMediaQuery("(max-width: 640px)");
   const viewport = useRef<HTMLDivElement>(null);
